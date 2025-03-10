@@ -6,6 +6,36 @@ const app = express();
 const port = process.env.PORT || 3001;
 const host = process.env.HOST || "0.0.0.0";
 
+// Check if another instance is running
+const lockFile = path.join(__dirname, ".lock");
+try {
+  if (fs.existsSync(lockFile)) {
+    console.error("Another instance is already running");
+    process.exit(1);
+  }
+  fs.writeFileSync(lockFile, process.pid.toString());
+} catch (err) {
+  console.error("Error checking/creating lock file:", err);
+  process.exit(1);
+}
+
+// Remove lock file on exit
+process.on("exit", () => {
+  try {
+    fs.unlinkSync(lockFile);
+  } catch (err) {
+    console.error("Error removing lock file:", err);
+  }
+});
+
+process.on("SIGINT", () => {
+  process.exit();
+});
+
+process.on("SIGTERM", () => {
+  process.exit();
+});
+
 // Serve static files from public directory
 app.use(express.static("public"));
 

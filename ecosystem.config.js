@@ -3,11 +3,15 @@ module.exports = {
     {
       name: "whatsapp-bot",
       script: "index.js",
-      watch: true,
+      watch: false,
+      instances: 1,
+      exec_mode: "fork",
+      autorestart: true,
+      max_restarts: 5,
+      restart_delay: 4000,
       env: {
         NODE_ENV: "production",
-        PORT: 3001,
-        HOST: "localhost",
+        PORT: 3000,
       },
       error_file: "logs/err.log",
       out_file: "logs/out.log",
