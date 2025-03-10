@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp QR Code</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        #qr-image {
+            max-width: 300px;
+            margin: 20px 0;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .connected {
+            background-color: #e7f3ff;
+            color: #0066cc;
+        }
+        .refresh-button {
+            padding: 10px 20px;
+            background-color: #128c7e;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .refresh-button:hover {
+            background-color: #075e54;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WhatsApp QR Code</h1>
+        <div id="qr-container">
+            <img id="qr-image" src="/qr" alt="WhatsApp QR Code" onerror="handleQRError()">
+        </div>
+        <div id="status" class="status"></div>
+        <button class="refresh-button" onclick="refreshQR()">Refresh QR Code</button>
+    </div>
+
+    <script>
+        function refreshQR() {
+            const img = document.getElementById('qr-image');
+            img.src = '/qr?' + new Date().getTime();
+        }
+
+        function handleQRError() {
+            document.getElementById('status').textContent = 'QR Code not available. Please try refreshing.';
+            document.getElementById('status').style.backgroundColor = '#ffebee';
+            document.getElementById('status').style.color = '#c62828';
+        }
+
+        // Check connection status periodically
+        setInterval(() => {
+            fetch('/status')
+                .then(response => response.json())
+                .then(data => {
+                    const status = document.getElementById('status');
+                    if (data.connected) {
+                        status.textContent = 'WhatsApp Connected!';
+                        status.className = 'status connected';
+                        document.getElementById('qr-container').style.display = 'none';
+                    }
+                })
+                .catch(console.error);
+        }, 5000);
+    </script>
+</body>
+</html> 

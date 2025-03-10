@@ -5,3 +5,4 @@ node_modules/
 ecosystem.config.js
 .wwebjs_auth/
 wa-trans.pem
+whatsapp-qr.png

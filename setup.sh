@@ -3,6 +3,13 @@
 # Update system
 sudo yum update && sudo yum upgrade -y
 
+# Install Apache
+sudo yum install -y httpd mod_proxy mod_proxy_http mod_proxy_wstunnel
+
+# Enable and start Apache
+sudo systemctl enable httpd
+sudo systemctl start httpd
+
 # Install Node.js and npm
 curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
 sudo yum install -y nodejs
@@ -42,6 +49,10 @@ sudo yum install -y \
 
 # Install PM2 globally
 sudo npm install -p pm2@latest -g
+
+# Configure Apache
+sudo cp whatsapp-bot.conf /etc/httpd/conf.d/
+sudo systemctl restart httpd
 
 # Create required directories
 mkdir -p logs

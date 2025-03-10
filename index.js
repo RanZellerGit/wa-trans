@@ -4,24 +4,25 @@ const fs = require("fs");
 const path = require("path");
 const app = express();
 const port = process.env.PORT || 3001;
+const host = process.env.HOST || "0.0.0.0";
 
+// Serve static files from public directory
+app.use(express.static("public"));
+
+// Root route serves the HTML page
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
+// QR code endpoint
 app.get("/qr", (req, res) => {
   const qrPath = path.join(__dirname, "whatsapp-qr.png");
 
   console.log("QR request received, checking path:", qrPath);
 
-  // Check if QR file exists
   if (fs.existsSync(qrPath)) {
     console.log("QR file found, size:", fs.statSync(qrPath).size);
-
-    // Set proper content type
     res.setHeader("Content-Type", "image/png");
-
-    // Send the QR code image and delete after sending
     res.sendFile(
       qrPath,
       {
@@ -34,19 +35,9 @@ app.get("/qr", (req, res) => {
       (err) => {
         if (err) {
           console.error("Error sending QR code:", err);
-          // Only send error if headers haven't been sent
           if (!res.headersSent) {
             res.status(500).send("Error sending QR code");
           }
-        } else {
-          // Delete the file after it's sent
-          fs.unlink(qrPath, (unlinkErr) => {
-            if (unlinkErr) {
-              console.error("Error deleting QR code file:", unlinkErr);
-            } else {
-              console.log("QR code file deleted successfully");
-            }
-          });
         }
       }
     );
@@ -56,6 +47,13 @@ app.get("/qr", (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+// Status endpoint
+app.get("/status", (req, res) => {
+  res.json({
+    connected: whatsappWeb.isConnected,
+  });
+});
+
+app.listen(port, host, () => {
+  console.log(`Server is running on ${host}:${port}`);
 });
