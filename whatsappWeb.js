@@ -114,38 +114,67 @@ const transcribeAudio = async (audioFile, retries = 3) => {
   }
 };
 
+// Add at the top with other constants
+const HEART_EMOJIS = [
+  "❤️",
+  "🧡",
+  "💛",
+  "💚",
+  "💙",
+  "💜",
+  "🤎",
+  "🖤",
+  "🤍",
+  "💖",
+  "💝",
+  "💓",
+  "💗",
+  "💕",
+  "💞",
+  "💘",
+  "💟",
+];
+
+// Helper function to get random heart
+const getRandomHeart = () => {
+  return HEART_EMOJIS[Math.floor(Math.random() * HEART_EMOJIS.length)];
+};
+
 client.on("message", async (msg) => {
   // Get sender info
   const senderNumber = msg.from.split("@")[0]; // Remove the @c.us suffix
   const contact = await msg.getContact();
 
+  // Get group info if it's a group message
+  const chat = await msg.getChat();
+  const isGroup = chat.isGroup;
+  const groupName = isGroup ? chat.name : null;
+
   console.log("Message from:", {
     number: senderNumber,
     name: contact.name || contact.pushname || "Unknown",
-    isGroup: msg.isGroup,
+    isGroup: isGroup,
+    groupName: groupName,
     timestamp: msg.timestamp,
     type: msg.type,
     body: msg.body,
   });
 
-  // You can now use senderNumber to identify specific users
+  // React with random hearts for specific users
   if (senderNumber === "13012656123" || senderNumber === "972549980355") {
     let emojiArr = ["💖", "🏳️‍🌈", "🌈"];
     let randomEmoji = emojiArr[Math.floor(Math.random() * emojiArr.length)];
     await msg.react(randomEmoji);
   }
 
-  if (senderNumber === "972528542448") {
-    await msg.react("💖");
+  if (!isGroup) {
+    if (senderNumber === "972528542448") {
+      await msg.react(getRandomHeart());
+    }
   }
 
-  if (senderNumber === "972542682298") {
-    let emojiArr = ["💖", "🏳️‍🌈", "🌈"];
-    let randomEmoji = emojiArr[Math.floor(Math.random() * emojiArr.length)];
-    await msg.react(randomEmoji);
-  }
   // Handle voice messages
-  if (msg.type === "audio" || msg.type === "ptt") {
+  if (!isGroup && (msg.type === "audio" || msg.type === "ptt")) {
     let audioPath = null;
     let mp3Path = null;
 
@@ -203,31 +232,9 @@ client.on("message", async (msg) => {
     }
   }
 
-  // Emoji responses with reactions
-  const emojiResponses = {
-    "❤️": { reply: "💖", reaction: "❤️" },
-    "😊": { reply: "🥰", reaction: "😊" },
-    "👋": { reply: "👋 Hello!", reaction: "👋" },
-    "😢": { reply: "🤗", reaction: "🤗" },
-    "🎉": { reply: "🎊 🎈", reaction: "🎉" },
-    "👍": { reply: "👍 Thanks!", reaction: "👍" },
-    "🔥": { reply: "✨ 🔥", reaction: "🔥" },
-    "🌟": { reply: "⭐ ✨", reaction: "⭐" },
-    "🤔": { reply: "💭", reaction: "🤔" },
-    "😴": { reply: "💤", reaction: "😴" },
-  };
-
-  // Check if the message is in our emoji responses
-  if (emojiResponses[msg.body]) {
-    const response = emojiResponses[msg.body];
-    await msg.react(response.reaction); // Add reaction to the message
-    // msg.reply(response.reply);
-  }
-
   // Keep the existing ping command
-  if (msg.body === "!ping") {
+  if (msg.body === "ping") {
     await msg.react("🏓"); // Add ping pong reaction
-    msg.reply("pong");
   }
 });
 
