@@ -168,7 +168,11 @@ client.on("message", async (msg) => {
   }
 
   if (!isGroup) {
-    if (senderNumber === "972528542448") {
+    if (
+      senderNumber === "972528542448" ||
+      senderNumber === "972535308698" ||
+      senderNumber === "    972545652890"
+    ) {
       await msg.react(getRandomHeart());
     }
   }
