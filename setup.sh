@@ -7,6 +7,15 @@ sudo yum update && sudo yum upgrade -y
 curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
 sudo yum install -y nodejs
 
+# Install EPEL repository
+sudo yum install -y epel-release
+sudo amazon-linux-extras install epel -y
+
+# Install FFmpeg from EPEL
+sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+sudo yum localinstall -y --nogpgcheck https://download1.rpmfusion.org/free/el/rpmfusion-free-release-7.noarch.rpm
+sudo yum install -y ffmpeg ffmpeg-devel
+
 # Install Chrome dependencies
 sudo yum install -y \
     alsa-lib.x86_64 \
@@ -30,9 +39,6 @@ sudo yum install -y \
     xorg-x11-fonts-Type1 \
     xorg-x11-utils \
     nss.x86_64
-
-# Install FFmpeg
-sudo yum install -y ffmpeg
 
 # Install PM2 globally
 sudo npm install -p pm2@latest -g
