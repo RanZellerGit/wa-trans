@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "prod": "pm2 start ecosystem.config.js",
-    "connectEc2": "ssh -i wa-trans.pem ec2-user@18.195.79.133",
+    "connectEc2": "ssh -i wa-trans.pem ec2-user@3.77.236.106",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

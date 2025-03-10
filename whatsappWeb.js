@@ -115,8 +115,35 @@ const transcribeAudio = async (audioFile, retries = 3) => {
 };
 
 client.on("message", async (msg) => {
-  console.log("Message type:", msg.type);
+  // Get sender info
+  const senderNumber = msg.from.split("@")[0]; // Remove the @c.us suffix
+  const contact = await msg.getContact();
 
+  console.log("Message from:", {
+    number: senderNumber,
+    name: contact.name || contact.pushname || "Unknown",
+    isGroup: msg.isGroup,
+    timestamp: msg.timestamp,
+    type: msg.type,
+    body: msg.body,
+  });
+
+  // You can now use senderNumber to identify specific users
+  if (senderNumber === "13012656123" || senderNumber === "972549980355") {
+    let emojiArr = ["💖", "🏳️‍🌈", "🌈"];
+    let randomEmoji = emojiArr[Math.floor(Math.random() * emojiArr.length)];
+    await msg.react(randomEmoji);
+  }
+
+  if (senderNumber === "972528542448") {
+    await msg.react("💖");
+  }
+
+  if (senderNumber === "972542682298") {
+    let emojiArr = ["💖", "🏳️‍🌈", "🌈"];
+    let randomEmoji = emojiArr[Math.floor(Math.random() * emojiArr.length)];
+    await msg.react(randomEmoji);
+  }
   // Handle voice messages
   if (msg.type === "audio" || msg.type === "ptt") {
     let audioPath = null;
@@ -201,6 +228,23 @@ client.on("message", async (msg) => {
   if (msg.body === "!ping") {
     await msg.react("🏓"); // Add ping pong reaction
     msg.reply("pong");
+  }
+});
+
+// Add event handler for sent messages
+client.on("message_create", async (msg) => {
+  if (msg.fromMe) {
+    const recipientNumber = msg.to.split("@")[0];
+    const contact = await client.getContactById(msg.to);
+
+    console.log("Message sent:", {
+      to: recipientNumber,
+      toName: contact.name || contact.pushname || "Unknown",
+      body: msg.body,
+      type: msg.type,
+      timestamp: msg.timestamp,
+      hasMedia: msg.hasMedia,
+    });
   }
 });
 
