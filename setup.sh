@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # Update system
-sudo apt update && sudo apt upgrade -y
+sudo yum update && sudo yum upgrade -y
 
 # Install Node.js and npm
 curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
+sudo yum install -y nodejs
 
 # Install FFmpeg
-sudo apt-get install -y ffmpeg
+sudo yum install -y ffmpeg
 
 # Install PM2 globally
 sudo npm install -p pm2@latest -g
