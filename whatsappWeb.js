@@ -1,4 +1,4 @@
-const { Client, MessageMedia } = require("whatsapp-web.js");
+const { Client, MessageMedia, LocalAuth } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
 const ffmpeg = require("fluent-ffmpeg");
 const OpenAI = require("openai");
@@ -13,12 +13,34 @@ ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 // For debugging
 console.log("FFmpeg Path:", ffmpegInstaller.path);
 
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
+
 // Initialize OpenAI with configuration
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const client = new Client();
+// Update client initialization to use LocalAuth
+const client = new Client({
+  authStrategy: new LocalAuth({
+    dataPath: ".wwebjs_auth", // Path where session data will be stored
+  }),
+  puppeteer: {
+    headless: true,
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-accelerated-2d-canvas",
+      "--no-first-run",
+      "--no-zygote",
+      "--disable-gpu",
+    ],
+  },
+});
+
 client.on("qr", async (qr) => {
   console.log("QR Code received, length:", qr.length);
 
