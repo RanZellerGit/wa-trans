@@ -1,30 +1,52 @@
 #!/bin/bash
 
-# Update system
-sudo yum update && sudo yum upgrade -y
+# Initialize logging
+LOG_FILE="/tmp/setup-status.log"
+echo "Setup script started at $(date)" > $LOG_FILE
 
-# Install Apache
+log_step() {
+    echo "$(date): $1" >> $LOG_FILE
+    echo "$1"
+}
+
+# System update
+log_step "Starting system update..."
+sudo yum update && sudo yum upgrade -y
+log_step "System update completed"
+
+# Apache installation
+log_step "Installing Apache and dependencies..."
 sudo yum install -y httpd mod_proxy mod_proxy_http mod_proxy_wstunnel
 sudo yum install -y git
-# Enable and start Apache
+log_step "Apache installation completed"
+
+# Start Apache
+log_step "Starting Apache service..."
 sudo systemctl enable httpd
 sudo systemctl start httpd
+log_step "Apache service started"
 
-
-# Install Node.js and npm
+# Node.js installation
+log_step "Installing Node.js..."
 curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
 sudo yum install -y nodejs
+log_step "Node.js installation completed"
 
-# Install EPEL repository
+# EPEL repository
+log_step "Setting up EPEL repository..."
 sudo yum install -y epel-release
 sudo amazon-linux-extras install epel -y
+log_step "EPEL repository setup completed"
 
-# Install FFmpeg from EPEL
+# FFmpeg installation
+log_step "Installing FFmpeg..."
 sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 sudo yum localinstall -y --nogpgcheck https://download1.rpmfusion.org/free/el/rpmfusion-free-release-7.noarch.rpm
 sudo yum install -y ffmpeg ffmpeg-devel
+log_step "FFmpeg installation completed"
 
-# Install Chrome dependencies
+# Chrome dependencies
+log_step "Installing Chrome dependencies..."
 sudo yum install -y \
     alsa-lib.x86_64 \
     atk.x86_64 \
@@ -47,30 +69,41 @@ sudo yum install -y \
     xorg-x11-fonts-Type1 \
     xorg-x11-utils \
     nss.x86_64
+log_step "Chrome dependencies installation completed"
 
-# Install PM2 globally
+# PM2 installation
+log_step "Installing PM2..."
 sudo npm install -p pm2@latest -g
+log_step "PM2 installation completed"
 
-# Configure Apache
+# Apache configuration
+log_step "Configuring Apache..."
 sudo cp whatsapp-bot.conf /etc/httpd/conf.d/
 sudo systemctl restart httpd
+log_step "Apache configuration completed"
 
-sudo git clone https://github.com/wa-trans/wa-trans.git
+# Project setup
+log_step "Setting up project..."
+git clone https://github.com/wa-trans/wa-trans.git
 cd wa-trans
+log_step "Project cloned successfully"
 
-# Create required directories
+# Directory setup
+log_step "Creating directories..."
 mkdir -p logs
 mkdir -p .wwebjs_auth
-
-# Set proper permissions
 chmod -R 755 .wwebjs_auth
+log_step "Directories created"
 
-# Set environment variables
+# Environment setup
+log_step "Setting up environment..."
 export OPENAI_API_KEY="sk-your-production-api-key-here"
 export NODE_ENV="production"
 export PORT="3001"
+log_step "Environment variables set"
 
-# Create PM2 ecosystem file from template
+# Create ecosystem file
+log_step "Creating PM2 ecosystem file..."
 cat > ecosystem.config.js << EOL
 module.exports = {
   apps: [{
@@ -80,7 +113,7 @@ module.exports = {
     env: {
       NODE_ENV: "production",
       PORT: 3001,
-      OPENAI_API_KEY: "${OPENAI_API_KEY}"
+      OPENAI_API_KEY: "\${OPENAI_API_KEY}"
     },
     error_file: "logs/err.log",
     out_file: "logs/out.log",
@@ -89,9 +122,23 @@ module.exports = {
   }]
 };
 EOL
+log_step "PM2 ecosystem file created"
 
-# Install dependencies
+# Dependencies installation
+log_step "Installing npm dependencies..."
 npm install
+log_step "Dependencies installed"
 
-# Start the application
+# Start application
+log_step "Starting application..."
 npm run prod
+log_step "Application started"
+
+# Final status
+log_step "Setup completed successfully at $(date)"
+
+# Create health check file
+echo "Setup completed successfully at $(date)" > /var/www/html/health.html
+
+# Print log location
+echo "Full setup log available at: $LOG_FILE"

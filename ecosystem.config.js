@@ -12,7 +12,7 @@ module.exports = {
       env: {
         NODE_ENV: "production",
         PORT: 3000,
-        OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+        OPENAI_API_KEY: process.env.OPENAI_API_KEY || "",
       },
       error_file: "logs/err.log",
       out_file: "logs/out.log",

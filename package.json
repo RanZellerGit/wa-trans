@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "prod": "./deploy.sh",
-    "connectEc2": "ssh -i wa-trans.pem ec2-user@54.93.89.67",
+    "connectEc2": "ssh -i wa-trans.pem ec2-user@63.177.97.24",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
