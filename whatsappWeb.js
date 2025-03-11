@@ -123,7 +123,6 @@ const HEART_EMOJIS = [
   "💙",
   "💜",
   "🤎",
-  "🖤",
   "🤍",
   "💖",
   "💝",
@@ -171,7 +170,8 @@ client.on("message", async (msg) => {
     if (
       senderNumber === "972528542448" ||
       senderNumber === "972535308698" ||
-      senderNumber === "972545652890"
+      senderNumber === "972545652890" ||
+      senderNumber === "972523136242"
     ) {
       await msg.react(getRandomHeart());
     }
