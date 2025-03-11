@@ -5,10 +5,11 @@ sudo yum update && sudo yum upgrade -y
 
 # Install Apache
 sudo yum install -y httpd mod_proxy mod_proxy_http mod_proxy_wstunnel
-
+sudo yum install -y git
 # Enable and start Apache
 sudo systemctl enable httpd
 sudo systemctl start httpd
+
 
 # Install Node.js and npm
 curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
@@ -53,6 +54,9 @@ sudo npm install -p pm2@latest -g
 # Configure Apache
 sudo cp whatsapp-bot.conf /etc/httpd/conf.d/
 sudo systemctl restart httpd
+
+sudo git clone https://github.com/wa-trans/wa-trans.git
+cd wa-trans
 
 # Create required directories
 mkdir -p logs
