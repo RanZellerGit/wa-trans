@@ -16,7 +16,7 @@ log_step "System update completed"
 
 # Apache installation
 log_step "Installing Apache and dependencies..."
-sudo yum install -y httpd mod_proxy mod_proxy_http mod_proxy_wstunnel
+sudo yum install -y httpd
 sudo yum install -y git
 log_step "Apache installation completed"
 
@@ -85,9 +85,9 @@ log_step "Apache configuration completed"
 # Project setup
 log_step "Setting up project..."
 KEY=`aws ssm get-parameter --name /wa-bot/rsa_id --with-decryption --query 'Parameter.Value' --output text`
-cat > /home/ec2-user/.ssh/rsa_id << 'EOL'
+cat > /home/ec2-user/.ssh/rsa_id << EOL
 -----BEGIN OPENSSH PRIVATE KEY-----
-$KEY
+${KEY}
 -----END OPENSSH PRIVATE KEY-----
 EOL
 sudo git clone git@github.com:RanZellerGit/wa-trans.git
