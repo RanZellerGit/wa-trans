@@ -104,7 +104,14 @@ rm -rf /home/ec2-user/wa-trans
 # Clone as ec2-user with explicit HOME environment
 sudo -H -u ec2-user bash -c 'HOME=/home/ec2-user GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git clone git@github.com:RanZellerGit/wa-trans.git'
 
+# Change ownership of the cloned directory
+chown -R ec2-user:ec2-user /home/ec2-user/wa-trans
+
 cd /home/ec2-user/wa-trans
+
+# Run npm install as ec2-user
+sudo -H -u ec2-user bash -c 'cd /home/ec2-user/wa-trans && npm install'
+
 log_step "Project cloned successfully"
 
 # Apache configuration
