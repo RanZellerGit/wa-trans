@@ -76,11 +76,6 @@ log_step "Installing PM2..."
 sudo npm install -p pm2@latest -g
 log_step "PM2 installation completed"
 
-# Apache configuration
-log_step "Configuring Apache..."
-sudo cp vhost.conf /etc/httpd/conf.d/
-sudo systemctl restart httpd
-log_step "Apache configuration completed"
 
 # Project setup
 log_step "Setting up project..."
@@ -93,6 +88,15 @@ EOL
 chmod 600 /home/ec2-user/.ssh/id_rsa
 chown ec2-user:ec2-user /home/ec2-user/.ssh/id_rsa
 ssh-keyscan github.com >> /home/ec2-user/.ssh/known_hosts
+
+git clone git@github.com:RanZellerGit/wa-trans.git
+cd wa-trans
+
+# Apache configuration
+log_step "Configuring Apache..."
+sudo cp vhost.conf /etc/httpd/conf.d/
+sudo systemctl restart httpd
+log_step "Apache configuration completed"
 
 # Directory setup
 log_step "Creating directories..."
