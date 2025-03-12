@@ -80,43 +80,50 @@ log_step "PM2 installation completed"
 # Project setup
 log_step "Setting up project..."
 
-# Create .ssh directory with correct permissions
-mkdir -p /home/ec2-user/.ssh
-chmod 700 /home/ec2-user/.ssh
+# Create directories and set permissions as root first
+sudo mkdir -p /home/ec2-user/.ssh
+sudo chmod 700 /home/ec2-user/.ssh
 
 # Get and store the SSH key
-aws ssm get-parameter \
+sudo -H -u ec2-user bash -c 'aws ssm get-parameter \
     --name /wa-bot/rsa_id \
     --with-decryption \
-    --query 'Parameter.Value' \
-    --output text > /home/ec2-user/.ssh/id_rsa
+    --query "Parameter.Value" \
+    --output text > /home/ec2-user/.ssh/id_rsa'
 
 # Set correct permissions and ownership
-chmod 600 /home/ec2-user/.ssh/id_rsa
-chown -R ec2-user:ec2-user /home/ec2-user/.ssh
-
-# Switch to ec2-user's home directory
-cd /home/ec2-user
+sudo chmod 600 /home/ec2-user/.ssh/id_rsa
+sudo chown -R ec2-user:ec2-user /home/ec2-user/.ssh
 
 # Remove any existing repository directory
-rm -rf /home/ec2-user/wa-trans
+sudo -H -u ec2-user bash -c 'rm -rf /home/ec2-user/wa-trans'
 
-# Clone as ec2-user with explicit HOME environment
-sudo -H -u ec2-user bash -c 'HOME=/home/ec2-user GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git clone git@github.com:RanZellerGit/wa-trans.git'
+# Clone repository as ec2-user
+sudo -H -u ec2-user bash -c 'cd /home/ec2-user && GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git clone git@github.com:RanZellerGit/wa-trans.git'
 
-# Change ownership of the cloned directory
-chown -R ec2-user:ec2-user /home/ec2-user/wa-trans
-
-cd /home/ec2-user/wa-trans
-
-# Run npm install as ec2-user
+# Change to project directory and install dependencies as ec2-user
 sudo -H -u ec2-user bash -c 'cd /home/ec2-user/wa-trans && npm install'
+
+# Install PM2 globally for ec2-user
+sudo -H -u ec2-user npm install -g pm2
+
+# Create PM2 directories and set permissions
+sudo mkdir -p /home/ec2-user/.pm2
+sudo chown -R ec2-user:ec2-user /home/ec2-user/.pm2
+
+# If PM2 is running, stop it and delete old process
+sudo -H -u ec2-user bash -c 'pm2 kill || true'
+sudo rm -rf /root/.pm2  # Remove any root-owned PM2 files
+
+# Start PM2 daemon as ec2-user
+sudo -H -u ec2-user bash -c 'pm2 startup'
+sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u ec2-user --hp /home/ec2-user
 
 log_step "Project cloned successfully"
 
 # Apache configuration
 log_step "Configuring Apache..."
-sudo cp vhost.conf /etc/httpd/conf.d/
+sudo cp /home/ec2-user/wa-trans/vhost.conf /etc/httpd/conf.d/
 sudo systemctl restart httpd
 log_step "Apache configuration completed"
 
@@ -127,21 +134,14 @@ mkdir -p .wwebjs_auth
 chmod -R 755 .wwebjs_auth
 log_step "Directories created"
 
-# Environment setup
-log_step "Setting up environment..."
-export OPENAI_API_KEY=`aws ssm get-parameter --name /wa-bot/openAiApi --with-decryption --query 'Parameter.Value' --output text`
-export NODE_ENV="production"
-export PORT="3000"
-
-# Dependencies installation
-log_step "Installing npm dependencies..."
-npm install
-log_step "Dependencies installed"
-
-# Start application
-log_step "Starting application..."
-sudo -H -u ec2-user bash -c 'cd /home/ec2-user/wa-trans && npm run prod'
-log_step "Application started"
+# Environment setup and application start
+log_step "Setting up environment and starting application..."
+sudo -H -u ec2-user bash -c 'cd /home/ec2-user/wa-trans && \
+    export OPENAI_API_KEY=$(aws ssm get-parameter --name /wa-bot/openAiApi --with-decryption --query "Parameter.Value" --output text) && \
+    export NODE_ENV="production" && \
+    export PORT="3000" && \
+    npm install && \
+    npm run prod'
 
 # Final status
 log_step "Setup completed successfully at $(date)"
