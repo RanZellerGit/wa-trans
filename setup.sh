@@ -17,7 +17,7 @@ log_step "System update completed"
 # Apache installation
 log_step "Installing Apache and dependencies..."
 sudo yum install -y httpd
-sudo yum install -y git
+sudo yum install -y git expect
 log_step "Apache installation completed"
 
 # Start Apache
@@ -90,7 +90,7 @@ cat > /home/ec2-user/.ssh/rsa_id << EOL
 ${KEY}
 -----END OPENSSH PRIVATE KEY-----
 EOL
-sudo git clone git@github.com:RanZellerGit/wa-trans.git
+expect -c 'spawn git clone git@github.com:RanZellerGit/wa-trans.git; expect "yes/no"; send "yes\r"; interact'
 cd wa-trans
 log_step "Project cloned successfully"
 
