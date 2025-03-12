@@ -78,13 +78,19 @@ log_step "PM2 installation completed"
 
 # Apache configuration
 log_step "Configuring Apache..."
-sudo cp whatsapp-bot.conf /etc/httpd/conf.d/
+sudo cp vhost.conf /etc/httpd/conf.d/
 sudo systemctl restart httpd
 log_step "Apache configuration completed"
 
 # Project setup
 log_step "Setting up project..."
-git clone https://github.com/wa-trans/wa-trans.git
+KEY=`aws ssm get-parameter --name /wa-bot/rsa_id --with-decryption --query 'Parameter.Value' --output text`
+cat > /home/ec2-user/.ssh/rsa_id << 'EOL'
+-----BEGIN OPENSSH PRIVATE KEY-----
+$KEY
+-----END OPENSSH PRIVATE KEY-----
+EOL
+sudo git clone git@github.com:RanZellerGit/wa-trans.git
 cd wa-trans
 log_step "Project cloned successfully"
 
@@ -97,32 +103,9 @@ log_step "Directories created"
 
 # Environment setup
 log_step "Setting up environment..."
-export OPENAI_API_KEY="sk-your-production-api-key-here"
+export OPENAI_API_KEY=`aws ssm get-parameter --name /wa-bot/openAiApi --with-decryption --query 'Parameter.Value' --output text`
 export NODE_ENV="production"
-export PORT="3001"
-log_step "Environment variables set"
-
-# Create ecosystem file
-log_step "Creating PM2 ecosystem file..."
-cat > ecosystem.config.js << EOL
-module.exports = {
-  apps: [{
-    name: "whatsapp-bot",
-    script: "index.js",
-    watch: true,
-    env: {
-      NODE_ENV: "production",
-      PORT: 3001,
-      OPENAI_API_KEY: "\${OPENAI_API_KEY}"
-    },
-    error_file: "logs/err.log",
-    out_file: "logs/out.log",
-    log_file: "logs/combined.log",
-    time: true
-  }]
-};
-EOL
-log_step "PM2 ecosystem file created"
+export PORT="3000"
 
 # Dependencies installation
 log_step "Installing npm dependencies..."
