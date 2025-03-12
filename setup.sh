@@ -85,14 +85,14 @@ log_step "Apache configuration completed"
 # Project setup
 log_step "Setting up project..."
 KEY=`aws ssm get-parameter --name /wa-bot/rsa_id --with-decryption --query 'Parameter.Value' --output text`
-cat > /home/ec2-user/.ssh/rsa_id << EOL
+cat > /home/ec2-user/.ssh/id_rsa << EOL
 -----BEGIN OPENSSH PRIVATE KEY-----
 ${KEY}
 -----END OPENSSH PRIVATE KEY-----
 EOL
-expect -c 'spawn git clone git@github.com:RanZellerGit/wa-trans.git; expect "yes/no"; send "yes\r"; interact'
-cd wa-trans
-log_step "Project cloned successfully"
+chmod 600 /home/ec2-user/.ssh/id_rsa
+chown ec2-user:ec2-user /home/ec2-user/.ssh/id_rsa
+ssh-keyscan github.com >> /home/ec2-user/.ssh/known_hosts
 
 # Directory setup
 log_step "Creating directories..."
