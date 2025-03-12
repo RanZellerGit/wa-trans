@@ -140,7 +140,7 @@ log_step "Dependencies installed"
 
 # Start application
 log_step "Starting application..."
-npm run prod
+sudo -H -u ec2-user bash -c 'cd /home/ec2-user/wa-trans && npm run prod'
 log_step "Application started"
 
 # Final status
