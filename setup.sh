@@ -84,9 +84,6 @@ log_step "Setting up project..."
 mkdir -p /home/ec2-user/.ssh
 chmod 700 /home/ec2-user/.ssh
 
-# Clean up any existing known_hosts entries for github.com
-rm -f /home/ec2-user/.ssh/known_hosts
-
 # Get and store the SSH key
 aws ssm get-parameter \
     --name /wa-bot/rsa_id \
@@ -98,10 +95,16 @@ aws ssm get-parameter \
 chmod 600 /home/ec2-user/.ssh/id_rsa
 chown -R ec2-user:ec2-user /home/ec2-user/.ssh
 
-# Clone the repository as ec2-user with StrictHostKeyChecking disabled
-sudo -u ec2-user GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no' git clone git@github.com:RanZellerGit/wa-trans.git
+# Switch to ec2-user's home directory
+cd /home/ec2-user
 
-cd wa-trans
+# Remove any existing repository directory
+rm -rf /home/ec2-user/wa-trans
+
+# Clone as ec2-user with explicit HOME environment
+sudo -H -u ec2-user bash -c 'HOME=/home/ec2-user GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git clone git@github.com:RanZellerGit/wa-trans.git'
+
+cd /home/ec2-user/wa-trans
 log_step "Project cloned successfully"
 
 # Apache configuration
