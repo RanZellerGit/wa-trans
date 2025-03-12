@@ -79,18 +79,30 @@ log_step "PM2 installation completed"
 
 # Project setup
 log_step "Setting up project..."
-KEY=`aws ssm get-parameter --name /wa-bot/rsa_id --with-decryption --query 'Parameter.Value' --output text`
-cat > /home/ec2-user/.ssh/id_rsa << EOL
------BEGIN OPENSSH PRIVATE KEY-----
-${KEY}
------END OPENSSH PRIVATE KEY-----
-EOL
-chmod 600 /home/ec2-user/.ssh/id_rsa
-chown ec2-user:ec2-user /home/ec2-user/.ssh/id_rsa
-ssh-keyscan github.com >> /home/ec2-user/.ssh/known_hosts
 
-git clone git@github.com:RanZellerGit/wa-trans.git
+# Create .ssh directory with correct permissions
+mkdir -p /home/ec2-user/.ssh
+chmod 700 /home/ec2-user/.ssh
+
+# Clean up any existing known_hosts entries for github.com
+rm -f /home/ec2-user/.ssh/known_hosts
+
+# Get and store the SSH key
+aws ssm get-parameter \
+    --name /wa-bot/rsa_id \
+    --with-decryption \
+    --query 'Parameter.Value' \
+    --output text > /home/ec2-user/.ssh/id_rsa
+
+# Set correct permissions and ownership
+chmod 600 /home/ec2-user/.ssh/id_rsa
+chown -R ec2-user:ec2-user /home/ec2-user/.ssh
+
+# Clone the repository as ec2-user with StrictHostKeyChecking disabled
+sudo -u ec2-user GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no' git clone git@github.com:RanZellerGit/wa-trans.git
+
 cd wa-trans
+log_step "Project cloned successfully"
 
 # Apache configuration
 log_step "Configuring Apache..."
