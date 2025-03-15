@@ -5,6 +5,11 @@ const OpenAI = require("openai");
 const fs = require("fs");
 const mime = require("mime-types");
 const QRCode = require("qrcode");
+const {
+  initializeDatabase,
+  insertMessage,
+  insertGroup,
+} = require("./database");
 
 // Add FFmpeg path configuration - Fix the configuration
 const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
@@ -75,8 +80,14 @@ client.on("qr", async (qr) => {
   }
 });
 
-client.on("ready", () => {
+client.on("ready", async () => {
   console.log("Client is ready!");
+  try {
+    await initializeDatabase();
+    console.log("Database connection established");
+  } catch (error) {
+    console.error("Failed to initialize database:", error);
+  }
 });
 
 // Add retry utility function
@@ -138,16 +149,76 @@ const HEART_EMOJIS = [
 const getRandomHeart = () => {
   return HEART_EMOJIS[Math.floor(Math.random() * HEART_EMOJIS.length)];
 };
+// Helper function to check if message is new
+const isNewMessage = (msg) => {
+  // Messages older than 1 minute are considered old
+  const ONE_MINUTE = 5 * 1000; // 60 seconds * 1000 milliseconds
+  const messageTime = msg.timestamp * 1000; // Convert to milliseconds
+  const currentTime = Date.now();
+
+  return currentTime - messageTime < ONE_MINUTE;
+};
 
 client.on("message", async (msg) => {
   // Get sender info
+  if (!isNewMessage(msg)) return;
   const senderNumber = msg.from.split("@")[0]; // Remove the @c.us suffix
   const contact = await msg.getContact();
 
   // Get group info if it's a group message
+  // Log chat object for debugging
   const chat = await msg.getChat();
-  const isGroup = chat.isGroup;
+  console.log("chat", msg);
+  const isGroup = msg.author ? true : false;
   const groupName = isGroup ? chat.name : null;
+  const groupId = isGroup ? chat.id._serialized : null;
+  const groupParticipants = isGroup ? chat.participants : null;
+
+  console.log("Group info:", {
+    name: groupName,
+    id: groupId,
+    participants: groupParticipants,
+  });
+
+  // Get group participants if it's a group message
+  let participants = [];
+  if (isGroup) {
+    try {
+      const groupChat = await msg.getChat();
+      participants = groupChat.participants.map((participant) => {
+        return {
+          id: participant.id.user,
+          isAdmin: participant.isAdmin || false,
+        };
+      });
+      console.log("Group participants:", participants);
+    } catch (error) {
+      console.error("Error getting group participants:", error);
+    }
+  }
+  try {
+    // If it's a group message, store group info
+    console.log("isGroup", isGroup, groupName, chat.from);
+    if (isGroup) {
+      await insertGroup({
+        id: msg.from,
+        name: chat.name,
+      });
+    }
+
+    // Store message with updated structure for Sequelize
+    await insertMessage({
+      id: msg.id._serialized,
+      content: msg.body,
+      message_type: msg.type,
+      sender: senderNumber,
+      recipient: isGroup ? chat.id._serialized : msg.to,
+      group_id: isGroup ? chat.from : null,
+      timestamp: new Date(msg.timestamp * 1000),
+    });
+  } catch (error) {
+    console.error("Error storing message in database:", error);
+  }
 
   console.log("Message from:", {
     number: senderNumber,
@@ -167,12 +238,7 @@ client.on("message", async (msg) => {
   }
 
   if (!isGroup) {
-    if (
-      senderNumber === "972528542448" ||
-      senderNumber === "972535308698" ||
-      senderNumber === "972545652890" ||
-      senderNumber === "972523136242"
-    ) {
+    if (senderNumber === "972528542448") {
       await msg.react(getRandomHeart());
     }
   }
