@@ -10,6 +10,7 @@ const {
   insertMessage,
   insertGroup,
 } = require("./database");
+const { parseMessage } = require("./utils/messageParser");
 
 // Add FFmpeg path configuration - Fix the configuration
 const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
@@ -125,30 +126,6 @@ const transcribeAudio = async (audioFile, retries = 3) => {
   }
 };
 
-// Add at the top with other constants
-const HEART_EMOJIS = [
-  "❤️",
-  "🧡",
-  "💛",
-  "💚",
-  "💙",
-  "💜",
-  "🤎",
-  "🤍",
-  "💖",
-  "💝",
-  "💓",
-  "💗",
-  "💕",
-  "💞",
-  "💘",
-  "💟",
-];
-
-// Helper function to get random heart
-const getRandomHeart = () => {
-  return HEART_EMOJIS[Math.floor(Math.random() * HEART_EMOJIS.length)];
-};
 // Helper function to check if message is new
 const isNewMessage = (msg) => {
   // Messages older than 1 minute are considered old
@@ -162,89 +139,66 @@ const isNewMessage = (msg) => {
 client.on("message", async (msg) => {
   // Get sender info
   if (!isNewMessage(msg)) return;
-  const senderNumber = msg.from.split("@")[0]; // Remove the @c.us suffix
-  const contact = await msg.getContact();
 
-  // Get group info if it's a group message
   // Log chat object for debugging
-  const chat = await msg.getChat();
-  console.log("chat", msg);
-  const isGroup = msg.author ? true : false;
-  const groupName = isGroup ? chat.name : null;
-  const groupId = isGroup ? chat.id._serialized : null;
-  const groupParticipants = isGroup ? chat.participants : null;
+  // Parse message content and type
+  const messageContent = await parseMessage(msg);
 
-  console.log("Group info:", {
-    name: groupName,
-    id: groupId,
-    participants: groupParticipants,
-  });
-
-  // Get group participants if it's a group message
-  let participants = [];
-  if (isGroup) {
-    try {
-      const groupChat = await msg.getChat();
-      participants = groupChat.participants.map((participant) => {
-        return {
-          id: participant.id.user,
-          isAdmin: participant.isAdmin || false,
-        };
-      });
-      console.log("Group participants:", participants);
-    } catch (error) {
-      console.error("Error getting group participants:", error);
-    }
-  }
-  try {
-    // If it's a group message, store group info
-    console.log("isGroup", isGroup, groupName, chat.from);
-    if (isGroup) {
-      await insertGroup({
-        id: msg.from,
-        name: chat.name,
-      });
-    }
-
-    // Store message with updated structure for Sequelize
-    await insertMessage({
-      id: msg.id._serialized,
-      content: msg.body,
-      message_type: msg.type,
-      sender: senderNumber,
-      recipient: isGroup ? chat.id._serialized : msg.to,
-      group_id: isGroup ? chat.from : null,
-      timestamp: new Date(msg.timestamp * 1000),
+  if (messageContent.isGroup) {
+    await insertGroup({
+      id: messageContent.groupId,
+      name: messageContent.groupName,
     });
-  } catch (error) {
-    console.error("Error storing message in database:", error);
   }
-
-  console.log("Message from:", {
-    number: senderNumber,
-    name: contact.name || contact.pushname || "Unknown",
-    isGroup: isGroup,
-    groupName: groupName,
-    timestamp: msg.timestamp,
-    type: msg.type,
-    body: msg.body,
+  await insertMessage({
+    id: messageContent.messageId,
+    content: messageContent.content,
+    message_type: messageContent.type,
+    sender: messageContent.senderNumber,
+    recipient: messageContent.receiverNumber,
+    group_id: messageContent.groupId,
+    timestamp: new Date(messageContent.timestamp * 1000),
   });
+  // if (isGroup) {
+  //   try {
+  //     const groupChat = await msg.getChat();
+  //     participants = groupChat.participants.map((participant) => {
+  //       return {
+  //         id: participant.id.user,
+  //         isAdmin: participant.isAdmin || false,
+  //       };
+  //     });
+  //     console.log("Group participants:", participants);
+  //   } catch (error) {
+  //     console.error("Error getting group participants:", error);
+  //   }
+  // }
+  // try {
+  //   // If it's a group message, store group info
+  //   console.log("isGroup", isGroup, groupName, chat.from);
+  //   if (isGroup) {
+  //     await insertGroup({
+  //       id: msg.from,
+  //       name: chat.name,
+  //     });
+  //   }
 
-  // React with random hearts for specific users
-  if (senderNumber === "13012656123" || senderNumber === "972549980355") {
-    let emojiArr = ["💖", "🏳️‍🌈", "🌈"];
-    let randomEmoji = emojiArr[Math.floor(Math.random() * emojiArr.length)];
-    await msg.react(randomEmoji);
-  }
-
-  if (!isGroup) {
-    if (senderNumber === "972528542448") {
-      await msg.react(getRandomHeart());
-    }
-  }
+  //   // Store message with updated structure for Sequelize
+  //   await insertMessage({
+  //     id: msg.id._serialized,
+  //     content: msg.body,
+  //     message_type: msg.type,
+  //     sender: senderNumber,
+  //     recipient: isGroup ? chat.id._serialized : msg.to,
+  //     group_id: isGroup ? chat.from : null,
+  //     timestamp: new Date(msg.timestamp * 1000),
+  //   });
+  // } catch (error) {
+  //   console.error("Error storing message in database:", error);
+  // }
 
   // Handle voice messages
-  if (!isGroup && (msg.type === "audio" || msg.type === "ptt")) {
+  if (msg.type === "audio" || msg.type === "ptt") {
     let audioPath = null;
     let mp3Path = null;
 

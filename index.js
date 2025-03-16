@@ -1,5 +1,5 @@
 const express = require("express");
-const whatsappWeb = require("./whatsappWeb.js");
+const whatsappWeb = require("./src/whatsappWeb.js");
 const fs = require("fs");
 const path = require("path");
 const app = express();
