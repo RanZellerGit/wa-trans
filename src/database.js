@@ -4,15 +4,28 @@ const path = require("path");
 require("dotenv").config();
 
 // Database configuration
+
 const sequelize = new Sequelize({
-  host: "database-1.chsyo8u64noi.eu-central-1.rds.amazonaws.com",
-  database: process.env.DB_NAME,
-  username: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
   dialect: "mysql",
-  logging: false, // Set to console.log to see SQL queries
-  define: {
-    timestamps: true,
+  host: "database-1.chsyo8u64noi.eu-central-1.rds.amazonaws.com", // or your RDS endpoint if using RDS
+  username: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME || "your_database",
+  port: process.env.DB_PORT || 3306,
+  logging: console.log,
+  pool: {
+    max: 5,
+    min: 0,
+    acquire: 30000,
+    idle: 10000,
+  },
+  dialectOptions: {
+    connectTimeout: 60000,
+    // If using SSL (required for RDS)
+    // ssl: 'Amazon RDS',
+    // ssl: {
+    //     rejectUnauthorized: true
+    // }
   },
 });
 
