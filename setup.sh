@@ -154,3 +154,4 @@ echo "Setup completed successfully at $(date)" > /var/www/html/health.html
 
 # Print log location
 echo "Full setup log available at: $LOG_FILE"
+<persist>true</persist>

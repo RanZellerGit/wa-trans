@@ -150,6 +150,7 @@ client.on("message", async (msg) => {
       name: messageContent.groupName,
     });
   }
+  console.log("messageContent", messageContent);
   await insertMessage({
     id: messageContent.messageId,
     content: messageContent.content,
@@ -268,14 +269,14 @@ client.on("message_create", async (msg) => {
     const recipientNumber = msg.to.split("@")[0];
     const contact = await client.getContactById(msg.to);
 
-    console.log("Message sent:", {
-      to: recipientNumber,
-      toName: contact.name || contact.pushname || "Unknown",
-      body: msg.body,
-      type: msg.type,
-      timestamp: msg.timestamp,
-      hasMedia: msg.hasMedia,
-    });
+    // console.log("Message sent:", {
+    //   to: recipientNumber,
+    //   toName: contact.name || contact.pushname || "Unknown",
+    //   body: msg.body,
+    //   type: msg.type,
+    //   timestamp: msg.timestamp,
+    //   hasMedia: msg.hasMedia,
+    // });
   }
 });
 
