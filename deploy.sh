@@ -21,4 +21,4 @@ export DB_NAME=$(aws ssm get-parameter --name /wa-bot/db_name --with-decryption 
 export NODE_ENV="production" 
 export PORT="3000" 
 
-npm run prod
+pm2 start ecosystem.config.js 
