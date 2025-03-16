@@ -34,6 +34,10 @@ Object.keys(models).forEach((modelName) => {
 });
 
 async function initializeDatabase() {
+  console.log("Initializing database...");
+  console.log(process.env.DB_USER);
+  console.log(process.env.DB_PASSWORD);
+  console.log(process.env.DB_NAME);
   try {
     // Test the connection
     await sequelize.authenticate();
