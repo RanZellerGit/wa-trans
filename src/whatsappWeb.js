@@ -40,8 +40,6 @@ const client = new Client({
       "--disable-setuid-sandbox",
       "--disable-dev-shm-usage",
       "--disable-accelerated-2d-canvas",
-      "--no-first-run",
-      "--no-zygote",
       "--disable-gpu",
     ],
   },
@@ -151,6 +149,20 @@ client.on("message", async (msg) => {
     });
   }
   console.log("messageContent", messageContent);
+  if (messageContent.type === "groups_v4_invite") {
+    console.log("Group invite received:", messageContent);
+    try {
+      // Accept the group invitation
+      await client.acceptInvite(messageContent.invitecode);
+      console.log("Successfully joined group:", messageContent.groupName);
+
+      // Send confirmation message back to sender
+      await msg.reply(`Successfully joined group: ${messageContent.groupName}`);
+    } catch (error) {
+      console.error("Error accepting group invite:", error);
+      await msg.reply("Sorry, I was unable to join the group at this time.");
+    }
+  }
   await insertMessage({
     id: messageContent.messageId,
     content: messageContent.content,
@@ -277,6 +289,49 @@ client.on("message_create", async (msg) => {
     //   timestamp: msg.timestamp,
     //   hasMedia: msg.hasMedia,
     // });
+  }
+});
+
+// Add error handling and reconnection logic
+client.on("disconnected", async (reason) => {
+  console.log("Client was disconnected:", reason);
+  await new Promise((resolve) => setTimeout(resolve, 5000));
+  try {
+    console.log("Attempting to reinitialize...");
+    await client.destroy();
+    await client.initialize();
+  } catch (error) {
+    console.error("Failed to reinitialize client:", error);
+    process.exit(1);
+  }
+});
+
+client.on("change_state", (state) => {
+  console.log("Connection state changed to:", state);
+});
+
+client.on("auth_failure", (msg) => {
+  console.error("Auth failure:", msg);
+});
+
+client.on("loading_screen", (percent, message) => {
+  console.log("Loading screen:", percent, "%", message);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+  if (reason instanceof Error && reason.message.includes("Protocol error")) {
+    console.log("Detected Puppeteer protocol error, attempting recovery...");
+    client
+      .destroy()
+      .then(() => {
+        console.log("Client destroyed, reinitializing...");
+        client.initialize();
+      })
+      .catch((err) => {
+        console.error("Failed to recover from protocol error:", err);
+        process.exit(1);
+      });
   }
 });
 

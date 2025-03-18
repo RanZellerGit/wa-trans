@@ -30,6 +30,11 @@ async function parseMessage(msg) {
         console.error("Error downloading image:", error);
       }
       break;
+    case "groups_v4_invite":
+      messageContent.groupId = msg.inviteV4.groupId.split("@")[0];
+      messageContent.groupName = msg.inviteV4.groupName;
+      messageContent.invitecode = await msg.getInviteCode();
+      break;
 
     case "video":
       messageContent = "[Video]";

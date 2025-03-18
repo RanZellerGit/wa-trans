@@ -18,6 +18,7 @@ log_step "System update completed"
 log_step "Installing Apache and dependencies..."
 sudo yum install -y httpd
 sudo yum install -y git expect
+sudo yum install -y cronie crontabs
 log_step "Apache installation completed"
 
 # Start Apache
@@ -146,6 +147,29 @@ sudo -H -u ec2-user bash -c 'cd /home/ec2-user/wa-trans && \
     npm install && \
     npm run prod'
 
+# Setup startup script for the application
+log_step "Setting up startup script..."
+STARTUP_SCRIPT="/home/ec2-user/start-wa-trans.sh"
+cat << 'EOF' | sudo tee $STARTUP_SCRIPT > /dev/null
+#!/bin/bash
+cd /home/ec2-user/wa-trans
+export OPENAI_API_KEY=$(aws ssm get-parameter --name /wa-bot/openAiApi --with-decryption --query "Parameter.Value" --output text)
+export DB_USER=$(aws ssm get-parameter --name /wa-bot/db_user --with-decryption --query "Parameter.Value" --output text)
+export DB_PASSWORD=$(aws ssm get-parameter --name /wa-bot/db_password --with-decryption --query "Parameter.Value" --output text)
+export DB_NAME=$(aws ssm get-parameter --name /wa-bot/db_name --with-decryption --query "Parameter.Value" --output text)
+export NODE_ENV="production"
+export PORT="3000"
+npm run prod >> /home/ec2-user/wa-trans/logs/startup.log 2>&1
+EOF
+
+# Set proper permissions
+sudo chmod +x $STARTUP_SCRIPT
+sudo chown ec2-user:ec2-user $STARTUP_SCRIPT
+
+# Setup cron job to run the startup script at reboot
+log_step "Setting up startup cron job..."
+(sudo -u ec2-user crontab -l 2>/dev/null; echo "@reboot $STARTUP_SCRIPT") | sudo -u ec2-user sort - | sudo -u ec2-user uniq - | sudo -u ec2-user crontab -
+
 # Final status
 log_step "Setup completed successfully at $(date)"
 
@@ -154,4 +178,3 @@ echo "Setup completed successfully at $(date)" > /var/www/html/health.html
 
 # Print log location
 echo "Full setup log available at: $LOG_FILE"
-<persist>true</persist>
