@@ -11,6 +11,7 @@ const {
   insertGroup,
 } = require("./database");
 const { parseMessage } = require("./utils/messageParser");
+const { handleWhatsAppGroupInvite } = require("./actions/groupsInvitehandle");
 
 // Add FFmpeg path configuration - Fix the configuration
 const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
@@ -150,18 +151,7 @@ client.on("message", async (msg) => {
   }
   console.log("messageContent", messageContent);
   if (messageContent.type === "groups_v4_invite") {
-    console.log("Group invite received:", messageContent);
-    try {
-      // Accept the group invitation
-      await client.acceptInvite(messageContent.invitecode);
-      console.log("Successfully joined group:", messageContent.groupName);
-
-      // Send confirmation message back to sender
-      await msg.reply(`Successfully joined group: ${messageContent.groupName}`);
-    } catch (error) {
-      console.error("Error accepting group invite:", error);
-      await msg.reply("Sorry, I was unable to join the group at this time.");
-    }
+    await handleWhatsAppGroupInvite(client, messageContent.invitecode);
   }
   await insertMessage({
     id: messageContent.messageId,
@@ -172,43 +162,6 @@ client.on("message", async (msg) => {
     group_id: messageContent.groupId,
     timestamp: new Date(messageContent.timestamp * 1000),
   });
-  // if (isGroup) {
-  //   try {
-  //     const groupChat = await msg.getChat();
-  //     participants = groupChat.participants.map((participant) => {
-  //       return {
-  //         id: participant.id.user,
-  //         isAdmin: participant.isAdmin || false,
-  //       };
-  //     });
-  //     console.log("Group participants:", participants);
-  //   } catch (error) {
-  //     console.error("Error getting group participants:", error);
-  //   }
-  // }
-  // try {
-  //   // If it's a group message, store group info
-  //   console.log("isGroup", isGroup, groupName, chat.from);
-  //   if (isGroup) {
-  //     await insertGroup({
-  //       id: msg.from,
-  //       name: chat.name,
-  //     });
-  //   }
-
-  //   // Store message with updated structure for Sequelize
-  //   await insertMessage({
-  //     id: msg.id._serialized,
-  //     content: msg.body,
-  //     message_type: msg.type,
-  //     sender: senderNumber,
-  //     recipient: isGroup ? chat.id._serialized : msg.to,
-  //     group_id: isGroup ? chat.from : null,
-  //     timestamp: new Date(msg.timestamp * 1000),
-  //   });
-  // } catch (error) {
-  //   console.error("Error storing message in database:", error);
-  // }
 
   // Handle voice messages
   if (msg.type === "audio" || msg.type === "ptt") {
