@@ -5,14 +5,10 @@ const OpenAI = require("openai");
 const fs = require("fs");
 const mime = require("mime-types");
 const QRCode = require("qrcode");
-const {
-  initializeDatabase,
-  insertMessage,
-  insertGroup,
-} = require("./database");
+const { initializeDatabase, insertGroup } = require("./database");
 const { parseMessage } = require("./utils/messageParser");
 const { handleWhatsAppGroupInvite } = require("./actions/groupsInvitehandle");
-
+const { insertMessageHandler } = require("./actions/chatMessageHadle");
 // Add FFmpeg path configuration - Fix the configuration
 const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
@@ -150,18 +146,12 @@ client.on("message", async (msg) => {
     });
   }
   console.log("messageContent", messageContent);
+  if (messageContent.type === "chat") {
+    await insertMessageHandler(messageContent);
+  }
   if (messageContent.type === "groups_v4_invite") {
     await handleWhatsAppGroupInvite(client, messageContent.invitecode);
   }
-  await insertMessage({
-    id: messageContent.messageId,
-    content: messageContent.content,
-    message_type: messageContent.type,
-    sender: messageContent.senderNumber,
-    recipient: messageContent.receiverNumber,
-    group_id: messageContent.groupId,
-    timestamp: new Date(messageContent.timestamp * 1000),
-  });
 
   // Handle voice messages
   if (msg.type === "audio" || msg.type === "ptt") {
