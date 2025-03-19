@@ -1,59 +1,43 @@
 const winston = require("winston");
-const path = require("path");
-
-// Define log levels
-const levels = {
-  error: 0,
-  warn: 1,
-  info: 2,
-  http: 3,
-  debug: 4,
-};
-
 // Define different colors for each level
 const colors = {
   error: "red",
   warn: "yellow",
   info: "green",
-  http: "magenta",
-  debug: "white",
+  verbose: "magenta",
 };
-
-// Tell winston that we want to link the colors
 winston.addColors(colors);
-
-// Custom format
-const format = winston.format.combine(
-  // Add timestamp
-  winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss:ms" }),
-  // Add colors
-  winston.format.colorize({ all: true }),
-  // Define the format of the message showing the timestamp, the level and the message
-  winston.format.printf(
-    (info) => `${info.timestamp} ${info.level}: ${info.message}`
-  )
-);
-
-// Define which transports the logger must use to print out messages
-const transports = [
-  // Console transport for all logs
-  new winston.transports.Console(),
-
-  // File transport for error logs
-  new winston.transports.File({
-    filename: "logs/error.log",
-    level: "error",
-  }),
-  // File transport for all logs
-  new winston.transports.File({ filename: "logs/all.log" }),
-];
-
-// Create the logger instance
 const logger = winston.createLogger({
-  level: process.env.NODE_ENV === "development" ? "debug" : "warn",
-  levels,
-  format,
-  transports,
+  level: "info",
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    //
+    // - Write all logs with importance level of `error` or less to `error.log`
+    // - Write all logs with importance level of `info` or less to `info.log`
+    //
+    new winston.transports.File({ filename: "logs/info.log", level: "info" }),
+    new winston.transports.File({ filename: "logs/warn.log", level: "warn" }),
+    new winston.transports.File({ filename: "logs/error.log", level: "error" }),
+    new winston.transports.File({
+      filename: "logs/verbose.log",
+      level: "verbose",
+    }),
+  ],
 });
+
+//
+// If we're not in production then log to the `console` with the format:
+// `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
+//
+if (process.env.NODE_ENV !== "production") {
+  logger.add(
+    new winston.transports.Console({
+      format: winston.format.simple(),
+    })
+  );
+}
 
 module.exports = logger;
