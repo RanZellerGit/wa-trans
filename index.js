@@ -5,6 +5,7 @@ const path = require("path");
 const app = express();
 const port = process.env.PORT || 3001;
 const host = process.env.HOST || "0.0.0.0";
+const logger = require("./src/utils/logger");
 
 process.on("SIGINT", () => {
   process.exit();
