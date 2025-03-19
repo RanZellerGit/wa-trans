@@ -6,7 +6,7 @@
   "scripts": {
     "start": "nodemon index.js",
     "prod": "./deploy.sh",
-    "connectEc2": "ssh -i wa-trans.pem ec2-user@63.176.48.148",
+    "connectEc2": "ssh -i wa-trans.pem ec2-user@35.159.62.61",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
