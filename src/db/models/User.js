@@ -14,10 +14,6 @@ module.exports = (sequelize) => {
         allowNull: false,
         unique: true,
       },
-      name: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
       push_name: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -25,10 +21,6 @@ module.exports = (sequelize) => {
       is_business: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
-      },
-      last_seen: {
-        type: DataTypes.DATE,
-        allowNull: true,
       },
     },
     {
@@ -45,9 +37,9 @@ module.exports = (sequelize) => {
       as: "sent_messages",
     });
     User.belongsToMany(models.Group, {
-      through: "group_members",
-      foreignKey: "user_id",
-      as: "groups",
+      through: "group_users",
+      foreignKey: "userId",
+      otherKey: "groupId",
     });
   };
 

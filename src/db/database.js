@@ -85,22 +85,29 @@ async function insertGroup(groupData) {
   }
 }
 
-async function insertUser(userData) {
+async function insertGroupUser(userid, groupid) {
   try {
-    const [user, created] = await models.User.upsert({
-      id: userData.id,
-      phone_number: userData.phone_number,
-      name: userData.name,
-      push_name: userData.push_name,
-      is_business: userData.is_business,
-      last_seen: userData.last_seen || new Date(),
+    await models.GroupUser.upsert({
+      userId: userid,
+      groupId: groupid,
     });
-    return user;
   } catch (error) {
-    console.error("Error upserting user:", error);
+    console.error("Error inserting group user:", error);
     throw error;
   }
 }
+
+async function findUser(userId) {
+  try {
+    const user = await models.User.findByPk(userId);
+    return user;
+  } catch (error) {
+    console.error("Error finding user:", error);
+    throw error;
+  }
+}
+
+//TODO: when join to group set the user as inviter
 
 module.exports = {
   sequelize,
@@ -108,5 +115,5 @@ module.exports = {
   initializeDatabase,
   insertMessage,
   insertGroup,
-  insertUser,
+  insertGroupUser,
 };

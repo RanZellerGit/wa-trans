@@ -11,7 +11,7 @@ module.exports = (sequelize) => {
       },
       name: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
     },
     {
@@ -26,6 +26,11 @@ module.exports = (sequelize) => {
     Group.hasMany(models.Message, {
       foreignKey: "group_id",
       as: "messages",
+    });
+    Group.belongsToMany(models.User, {
+      through: "group_users",
+      foreignKey: "groupId",
+      otherKey: "userId",
     });
   };
 

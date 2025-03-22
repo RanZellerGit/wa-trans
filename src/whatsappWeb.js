@@ -5,8 +5,13 @@ const OpenAI = require("openai");
 const fs = require("fs");
 const mime = require("mime-types");
 const QRCode = require("qrcode");
-const { initializeDatabase, insertGroup } = require("./database");
+const {
+  initializeDatabase,
+  insertGroup,
+  insertGroupUser,
+} = require("./db/database");
 const { parseMessage } = require("./utils/messageParser");
+const { getOrCreateNewUser } = require("./db/actions/userActions");
 const { handleWhatsAppGroupInvite } = require("./actions/groupsInvitehandle");
 const { insertMessageHandler } = require("./actions/chatMessageHadle");
 // Add FFmpeg path configuration - Fix the configuration
@@ -131,6 +136,18 @@ const isNewMessage = (msg) => {
   return currentTime - messageTime < ONE_MINUTE;
 };
 
+client.on("group_join", async (notification) => {
+  console.log(`Invited by: ${notification.author}`);
+  const user = await getOrCreateNewUser(
+    notification.author,
+    notification.author.split("@")[0]
+  );
+  await insertGroup({
+    id: notification.chatId,
+    name: null,
+  });
+  await insertGroupUser(notification.author, notification.chatId);
+});
 client.on("message", async (msg) => {
   // Get sender info
   if (!isNewMessage(msg)) return;
@@ -139,15 +156,25 @@ client.on("message", async (msg) => {
   // Parse message content and type
   const messageContent = await parseMessage(msg);
 
-  if (messageContent.isGroup) {
+  if (messageContent.isGroup && messageContent.type === "chat") {
     await insertGroup({
       id: messageContent.groupId,
       name: messageContent.groupName,
     });
+    await getOrCreateNewUser(
+      messageContent.user.id,
+      messageContent.user.number,
+      messageContent.user.pushName,
+      messageContent.user.isBusiness
+    );
+    await insertGroupUser(messageContent.user.id, messageContent.groupId);
   }
   console.log("messageContent", messageContent);
   if (messageContent.type === "chat") {
     await insertMessageHandler(messageContent);
+  }
+  if (messageContent.type === "e2e_notification") {
+    console.log("e2e_notification", messageContent);
   }
   if (messageContent.type === "groups_v4_invite") {
     await handleWhatsAppGroupInvite(client, messageContent.invitecode);

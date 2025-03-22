@@ -1,3 +1,4 @@
+const { getOrCreateNewUser } = require("../db/actions/userActions");
 async function parseMessage(msg) {
   let messageContent = {};
   const chat = await msg.getChat();
@@ -6,16 +7,24 @@ async function parseMessage(msg) {
   messageContent.groupName = messageContent.isGroup ? chat.name : null;
   messageContent.messageId = msg.id.id;
   messageContent.groupId = messageContent.isGroup ? chat.id._serialized : null;
-  messageContent.senderNumber = messageContent.isGroup
-    ? msg.author
-    : msg.from.split("@")[0];
   messageContent.timestamp = msg.timestamp;
   messageContent.type = msg.type;
   messageContent.receiverNumber = msg.to.split("@")[0];
+
+  let contact = await msg.getContact();
+
+  messageContent.user = await getOrCreateNewUser(
+    contact.id._serialized,
+    contact.number,
+    contact.pushname,
+    contact.isBusiness
+  );
+  messageContent.sender = messageContent.user.id;
   switch (msg.type) {
     case "chat":
       messageContent.content = msg.body; // Text message
       break;
+    // TODO: support for media messages
 
     case "image":
       messageContent = "[Image]";
@@ -34,6 +43,9 @@ async function parseMessage(msg) {
       messageContent.groupId = msg.inviteV4.groupId.split("@")[0];
       messageContent.groupName = msg.inviteV4.groupName;
       messageContent.invitecode = await msg.getInviteCode();
+      break;
+    case "e2e_notification":
+      return {};
       break;
 
     case "video":

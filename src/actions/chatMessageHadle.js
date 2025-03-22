@@ -1,4 +1,4 @@
-const { insertMessage } = require("../database");
+const { insertMessage } = require("../db/database");
 const logger = require("../utils/logger"); // Assuming this is where your logger is defined
 
 const insertMessageHandler = async (messageContent) => {
@@ -15,8 +15,7 @@ const insertMessageHandler = async (messageContent) => {
       id: messageContent.messageId,
       content: messageContent.content,
       message_type: messageContent.type,
-      sender: messageContent.senderNumber,
-      recipient: messageContent.receiverNumber,
+      sender: messageContent.sender,
       group_id: messageContent.groupId,
       timestamp: new Date(messageContent.timestamp * 1000),
     });

@@ -21,10 +21,6 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      recipient: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
       group_id: {
         type: DataTypes.STRING,
         allowNull: true,
