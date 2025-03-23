@@ -64,15 +64,6 @@ async function parseMessage(msg) {
 
     case "audio":
     case "ptt": // Push to talk voice message
-      messageContent = "[Audio Message]";
-      try {
-        const media = await msg.downloadMedia();
-        if (media) {
-          messageContent = "[Audio Message - Transcription pending]";
-        }
-      } catch (error) {
-        console.error("Error downloading audio:", error);
-      }
       break;
 
     case "document":

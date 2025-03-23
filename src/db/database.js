@@ -67,28 +67,8 @@ async function initializeDatabase() {
   }
 }
 
-async function insertMessage(messageData) {
-  try {
-    await models.Message.create(messageData);
-  } catch (error) {
-    console.error("Error inserting message:", error);
-    throw error;
-  }
-}
-
-async function insertGroup(groupData) {
-  try {
-    await models.Group.upsert(groupData);
-  } catch (error) {
-    console.error("Error inserting group:", error);
-    throw error;
-  }
-}
-
 module.exports = {
   sequelize,
   models,
   initializeDatabase,
-  insertMessage,
-  insertGroup,
 };
