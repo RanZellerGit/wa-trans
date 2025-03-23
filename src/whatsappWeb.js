@@ -5,11 +5,8 @@ const OpenAI = require("openai");
 const fs = require("fs");
 const mime = require("mime-types");
 const QRCode = require("qrcode");
-const {
-  initializeDatabase,
-  insertGroup,
-  insertGroupUser,
-} = require("./db/database");
+const { initializeDatabase, insertGroup } = require("./db/database");
+const { insertGroupUser } = require("./db/actions/groupUserActions");
 const { parseMessage } = require("./utils/messageParser");
 const { getOrCreateNewUser } = require("./db/actions/userActions");
 const { handleWhatsAppGroupInvite } = require("./actions/groupsInvitehandle");
@@ -146,11 +143,11 @@ client.on("group_join", async (notification) => {
     id: notification.chatId,
     name: null,
   });
-  await insertGroupUser(notification.author, notification.chatId);
+  await insertGroupUser(notification.author, notification.chatId, true);
 });
 client.on("message", async (msg) => {
   // Get sender info
-  if (!isNewMessage(msg)) return;
+  if (!isNewMessage(msg) || msg.type === "e2e_notification") return;
 
   // Log chat object for debugging
   // Parse message content and type
@@ -163,18 +160,15 @@ client.on("message", async (msg) => {
     });
     await getOrCreateNewUser(
       messageContent.user.id,
-      messageContent.user.number,
-      messageContent.user.pushName,
-      messageContent.user.isBusiness
+      messageContent.user.phone_number,
+      messageContent.user.push_name,
+      messageContent.user.is_business
     );
     await insertGroupUser(messageContent.user.id, messageContent.groupId);
   }
   console.log("messageContent", messageContent);
   if (messageContent.type === "chat") {
     await insertMessageHandler(messageContent);
-  }
-  if (messageContent.type === "e2e_notification") {
-    console.log("e2e_notification", messageContent);
   }
   if (messageContent.type === "groups_v4_invite") {
     await handleWhatsAppGroupInvite(client, messageContent.invitecode);

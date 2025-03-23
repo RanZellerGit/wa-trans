@@ -23,6 +23,7 @@ module.exports = (sequelize) => {
       inviter: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
+        defaultValue: false,
       },
     },
     {

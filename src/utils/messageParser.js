@@ -16,7 +16,7 @@ async function parseMessage(msg) {
   messageContent.user = await getOrCreateNewUser(
     contact.id._serialized,
     contact.number,
-    contact.pushname,
+    contact.isBusiness ? contact.verifiedName : contact.pushname,
     contact.isBusiness
   );
   messageContent.sender = messageContent.user.id;

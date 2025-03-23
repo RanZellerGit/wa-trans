@@ -2,28 +2,31 @@ const { models } = require("../database");
 
 function createUser(id, number, pushName, isBusiness) {
   return {
-    id,
-    number,
-    pushName,
-    isBusiness,
+    id: id,
+    phone_number: number,
+    push_name: pushName,
+    is_business: isBusiness,
   };
 }
 
 async function getOrCreateNewUser(
-  id,
+  userId,
   number = null,
   pushName = null,
   isBusiness = false
 ) {
   try {
     // Extract the number from author ID (removing the @c.us or @s.whatsapp.net suffix)
-    let user = models.User.findByPk(id);
+    let user = await models.User.findByPk(userId);
 
     if (!user) {
-      user = createUser(userId, userId.split("@")[0], null, false);
+      user = createUser(userId, number, pushName, isBusiness);
       models.User.create(user);
-    }
-    if (number || pushName || isBusiness) {
+    } else if (
+      user.dataValues.phone_number != number ||
+      user.dataValues.push_name != pushName ||
+      user.dataValues.is_business != isBusiness
+    ) {
       user.number = number;
       user.pushName = pushName;
       user.isBusiness = isBusiness;
@@ -35,7 +38,7 @@ async function getOrCreateNewUser(
           is_business: isBusiness,
         },
         {
-          where: { id: id },
+          where: { id: userId },
         }
       );
     }
@@ -46,6 +49,5 @@ async function getOrCreateNewUser(
 }
 
 module.exports = {
-  createUser,
   getOrCreateNewUser,
 };
