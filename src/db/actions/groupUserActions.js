@@ -1,11 +1,20 @@
 const { models } = require("../database");
 async function insertGroupUser(userid, groupid, inviter = false) {
   try {
-    await models.GroupUser.upsert({
-      userId: userid,
-      groupId: groupid,
-      inviter: inviter,
+    let groupUser = await models.GroupUser.findOne({
+      where: {
+        userId: userid,
+        groupId: groupid,
+      },
     });
+
+    if (!groupUser) {
+      await models.GroupUser.create({
+        userId: userid,
+        groupId: groupid,
+        inviter: inviter,
+      });
+    }
   } catch (error) {
     console.error("Error inserting group user:", error);
     throw error;

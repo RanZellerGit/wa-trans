@@ -7,6 +7,7 @@ module.exports = (sequelize) => {
       groupId: {
         type: DataTypes.STRING,
         allowNull: false,
+        primaryKey: true,
         references: {
           model: "groups",
           key: "id",
@@ -15,6 +16,7 @@ module.exports = (sequelize) => {
       userId: {
         type: DataTypes.STRING,
         allowNull: false,
+        primaryKey: true,
         references: {
           model: "users",
           key: "id",

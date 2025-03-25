@@ -3,15 +3,15 @@ const qrcode = require("qrcode-terminal");
 const ffmpeg = require("fluent-ffmpeg");
 const fs = require("fs");
 const QRCode = require("qrcode");
-const { initializeDatabase, insertGroup } = require("./db/database");
+const { initializeDatabase } = require("./db/database");
 const { insertGroupUser } = require("./db/actions/groupUserActions");
-const { parseMessage } = require("./utils/messageParser");
 const { getOrCreateNewUser } = require("./db/actions/userActions");
 const { handleWhatsAppGroupInvite } = require("./actions/groupsInvitehandle");
 const { insertMessageHandler } = require("./actions/chatMessageHadle");
 const { handleAudioPttMessage } = require("./actions/audioPttHandler");
 // Add FFmpeg path configuration - Fix the configuration
 const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
+const { insertGroup } = require("./db/actions/groupsActions");
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 // For debugging
@@ -94,10 +94,6 @@ const isNewMessage = (msg) => {
 
 client.on("group_join", async (notification) => {
   console.log(`Invited by: ${notification.author}`);
-  const user = await getOrCreateNewUser(
-    notification.author,
-    notification.author.split("@")[0]
-  );
   await insertGroup({
     id: notification.chatId,
     name: null,
