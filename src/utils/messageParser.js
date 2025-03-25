@@ -12,13 +12,13 @@ async function parseMessage(msg) {
   messageContent.receiverNumber = msg.to.split("@")[0];
 
   let contact = await msg.getContact();
-
   messageContent.user = await getOrCreateNewUser(
     contact.id._serialized,
     contact.number,
     contact.isBusiness ? contact.verifiedName : contact.pushname,
     contact.isBusiness
   );
+
   messageContent.sender = messageContent.user.id;
   switch (msg.type) {
     case "chat":
@@ -49,17 +49,6 @@ async function parseMessage(msg) {
       break;
 
     case "video":
-      messageContent = "[Video]";
-      try {
-        const media = await msg.downloadMedia();
-        if (media) {
-          messageContent = `[Video with caption: ${
-            msg.caption || "No caption"
-          }]`;
-        }
-      } catch (error) {
-        console.error("Error downloading video:", error);
-      }
       break;
 
     case "audio":

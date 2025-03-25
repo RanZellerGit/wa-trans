@@ -9,9 +9,11 @@ const { getOrCreateNewUser } = require("./db/actions/userActions");
 const { handleWhatsAppGroupInvite } = require("./actions/groupsInvitehandle");
 const { insertMessageHandler } = require("./actions/chatMessageHadle");
 const { handleAudioPttMessage } = require("./actions/audioPttHandler");
+const { handleImageMessage } = require("./actions/imageHandler");
 // Add FFmpeg path configuration - Fix the configuration
 const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
 const { insertGroup } = require("./db/actions/groupsActions");
+const { handleVideoMessage } = require("./actions/videoHandler");
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 // For debugging
@@ -114,6 +116,15 @@ client.on("message", async (msg) => {
   // Handle voice messages
   if (msg.type === "audio" || msg.type === "ptt") {
     await handleAudioPttMessage(msg);
+  }
+
+  // Handle image messages
+  if (msg.type === "image") {
+    await handleImageMessage(msg);
+  }
+
+  if (msg.type === "video") {
+    await handleVideoMessage(msg);
   }
 
   // Keep the existing ping command
