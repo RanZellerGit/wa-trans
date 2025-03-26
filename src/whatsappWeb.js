@@ -14,6 +14,7 @@ const { handleImageMessage } = require("./actions/imageHandler");
 const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
 const { insertGroup } = require("./db/actions/groupsActions");
 const { handleVideoMessage } = require("./actions/videoHandler");
+const logger = require("./utils/logger");
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 // For debugging
@@ -41,12 +42,11 @@ const client = new Client({
 });
 
 client.on("qr", async (qr) => {
-  console.log("QR Code received, length:", qr.length);
+  logger.info("QR Code received", { qrLength: qr.length });
 
   // Generate terminal QR code
   qrcode.generate(qr, { small: true });
 
-  // Save QR code as PNG with options
   try {
     const options = {
       type: "png",
@@ -56,18 +56,16 @@ client.on("qr", async (qr) => {
     };
 
     await QRCode.toFile("./whatsapp-qr.png", qr, options);
-    console.log(
-      "QR code saved as whatsapp-qr.png with size:",
-      fs.statSync("./whatsapp-qr.png").size
-    );
+    logger.info("QR code saved successfully", {
+      filename: "whatsapp-qr.png",
+      size: fs.statSync("./whatsapp-qr.png").size,
+    });
 
-    // Verify the file is readable
     const testRead = fs.readFileSync("./whatsapp-qr.png");
-    console.log("QR file is readable, size:", testRead.length);
+    logger.debug("QR file verification", { size: testRead.length });
   } catch (err) {
-    console.error("Could not save QR code:", err);
-    console.error("Error details:", {
-      message: err.message,
+    logger.error("Failed to save QR code", {
+      error: err.message,
       stack: err.stack,
       code: err.code,
     });
@@ -75,12 +73,12 @@ client.on("qr", async (qr) => {
 });
 
 client.on("ready", async () => {
-  console.log("Client is ready!");
+  logger.info("WhatsApp client is ready");
   try {
     await initializeDatabase();
-    console.log("Database connection established");
+    logger.info("Database connection established");
   } catch (error) {
-    console.error("Failed to initialize database:", error);
+    logger.error("Database initialization failed", { error: error.message });
   }
 });
 
@@ -107,28 +105,34 @@ client.on("message", async (msg) => {
   if (!isNewMessage(msg) || msg.type === "e2e_notification") return;
 
   if (msg.type === "chat") {
+    logger.info("message type is chat");
     await insertMessageHandler(msg);
   }
   if (msg.type === "groups_v4_invite") {
+    logger.info("message type is groups_v4_invite");
     await handleWhatsAppGroupInvite(client, messageContent.invitecode);
   }
 
   // Handle voice messages
   if (msg.type === "audio" || msg.type === "ptt") {
+    logger.info("message type is audio or ptt");
     await handleAudioPttMessage(msg);
   }
 
   // Handle image messages
   if (msg.type === "image") {
+    logger.info("message type is image");
     await handleImageMessage(msg);
   }
 
   if (msg.type === "video") {
+    logger.info("message type is video");
     await handleVideoMessage(msg);
   }
 
   // Keep the existing ping command
   if (msg.body === "ping") {
+    logger.info("message body is ping");
     await msg.react("🏓"); // Add ping pong reaction
   }
 });
@@ -136,58 +140,54 @@ client.on("message", async (msg) => {
 // Add event handler for sent messages
 client.on("message_create", async (msg) => {
   if (msg.fromMe) {
-    const recipientNumber = msg.to.split("@")[0];
-    const contact = await client.getContactById(msg.to);
-
-    // console.log("Message sent:", {
-    //   to: recipientNumber,
-    //   toName: contact.name || contact.pushname || "Unknown",
-    //   body: msg.body,
-    //   type: msg.type,
-    //   timestamp: msg.timestamp,
-    //   hasMedia: msg.hasMedia,
-    // });
+    logger.info("message is sent by me");
   }
 });
 
 // Add error handling and reconnection logic
 client.on("disconnected", async (reason) => {
-  console.log("Client was disconnected:", reason);
+  logger.warn("Client was disconnected", { reason });
   await new Promise((resolve) => setTimeout(resolve, 5000));
   try {
-    console.log("Attempting to reinitialize...");
+    logger.info("Attempting to reinitialize client");
     await client.destroy();
     await client.initialize();
   } catch (error) {
-    console.error("Failed to reinitialize client:", error);
+    logger.error("Failed to reinitialize client", { error: error.message });
     process.exit(1);
   }
 });
 
 client.on("change_state", (state) => {
-  console.log("Connection state changed to:", state);
+  logger.info("Connection state changed", { state });
 });
 
 client.on("auth_failure", (msg) => {
-  console.error("Auth failure:", msg);
+  logger.error("Authentication failure", { message: msg });
 });
 
 client.on("loading_screen", (percent, message) => {
-  console.log("Loading screen:", percent, "%", message);
+  logger.info("Loading screen", { percent, message });
 });
 
 process.on("unhandledRejection", (reason, promise) => {
-  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+  logger.error("Unhandled Rejection", {
+    reason: reason instanceof Error ? reason.message : reason,
+    stack: reason instanceof Error ? reason.stack : undefined,
+  });
+
   if (reason instanceof Error && reason.message.includes("Protocol error")) {
-    console.log("Detected Puppeteer protocol error, attempting recovery...");
+    logger.warn("Detected Puppeteer protocol error, attempting recovery");
     client
       .destroy()
       .then(() => {
-        console.log("Client destroyed, reinitializing...");
+        logger.info("Client destroyed, reinitializing");
         client.initialize();
       })
       .catch((err) => {
-        console.error("Failed to recover from protocol error:", err);
+        logger.error("Failed to recover from protocol error", {
+          error: err.message,
+        });
         process.exit(1);
       });
   }
