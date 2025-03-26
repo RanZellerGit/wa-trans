@@ -3,31 +3,8 @@ const path = require("path");
 const ffmpeg = require("ffmpeg-static");
 const { spawn } = require("child_process");
 const openai = require("../aiModle");
-const { parseMessage } = require("../utils/messageParser");
-const { insertMessage } = require("../db/actions/messagesActions");
-const { insertGroup } = require("../db/actions/groupsActions");
-const { getOrCreateNewUser } = require("../db/actions/userActions");
-const { insertGroupUser } = require("../db/actions/groupUserActions");
+const { insertMessageHandler } = require("./chatMessageHadle");
 
-const insertMessageHandler = async (msg, content) => {
-  const messageContent = await parseMessage(msg);
-
-  if (messageContent.isGroup) {
-    await insertGroup({
-      id: messageContent.groupId,
-      name: messageContent.groupName,
-    });
-    await getOrCreateNewUser(
-      messageContent.user.id,
-      messageContent.user.phone_number,
-      messageContent.user.push_name,
-      messageContent.user.is_business
-    );
-    await insertGroupUser(messageContent.user.id, messageContent.groupId);
-  }
-  messageContent.content = content;
-  await insertMessage(messageContent);
-};
 /**
  * Handles video messages from WhatsApp, transcribes audio, and analyzes video content
  */

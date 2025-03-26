@@ -5,7 +5,7 @@ const { getOrCreateNewUser } = require("../db/actions/userActions");
 const { insertGroupUser } = require("../db/actions/groupUserActions");
 const { insertGroup } = require("../db/actions/groupsActions");
 
-const insertMessageHandler = async (msg) => {
+const insertMessageHandler = async (msg, content) => {
   const messageContent = await parseMessage(msg);
 
   if (messageContent.isGroup) {
@@ -21,7 +21,7 @@ const insertMessageHandler = async (msg) => {
     );
     await insertGroupUser(messageContent.user.id, messageContent.groupId);
   }
-  messageContent.content = msg.body;
+  messageContent.content = content;
   await insertMessage(messageContent);
   try {
     logger.info("Attempting to insert message:", {

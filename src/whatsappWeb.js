@@ -106,7 +106,7 @@ client.on("message", async (msg) => {
 
   if (msg.type === "chat") {
     logger.info("message type is chat");
-    await insertMessageHandler(msg);
+    await insertMessageHandler(msg, msg.body);
   }
   if (msg.type === "groups_v4_invite") {
     logger.info("message type is groups_v4_invite");

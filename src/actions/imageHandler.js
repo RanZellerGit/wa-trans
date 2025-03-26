@@ -1,21 +1,19 @@
 const fs = require("fs");
 const path = require("path");
 const openai = require("../aiModle");
-const { MessageMedia } = require("whatsapp-web.js");
-const { handleVideoMessage } = require("./videoHandler");
-
+const logger = require("../utils/logger");
+const { insertMessageHandler } = require("./chatMessageHadle");
 /**
  * Handles image messages from WhatsApp and uses OpenAI Vision API to analyze them
  */
 const handleImageMessage = async (msg) => {
   try {
-    console.log("Processing image message...");
+    logger.info("Processing image message...");
 
     // Download the image
     const media = await msg.downloadMedia();
     if (!media) {
-      console.error("Failed to download media");
-      await msg.reply("❌ Failed to process image. Please try again.");
+      logger.error("Failed to download media");
       return;
     }
 
@@ -30,19 +28,22 @@ const handleImageMessage = async (msg) => {
       `image_${Date.now()}.${media.mimetype.split("/")[1] || "jpg"}`
     );
     fs.writeFileSync(imagePath, Buffer.from(media.data, "base64"));
-    console.log(`Image saved at: ${imagePath}`);
+    logger.info(`Image saved at: ${imagePath}`);
 
     // Send to OpenAI Vision API
     const response = await analyzeImageWithOpenAI(imagePath);
 
     // Reply with analysis
-    await msg.reply(`🖼️ *Image Analysis*\n\n${response}`);
+    await insertMessageHandler(msg, `*Image Analysis*\n\n${response}`);
 
     // Clean up temporary file
     fs.unlinkSync(imagePath);
+    logger.info("Image processing completed successfully");
   } catch (error) {
-    console.error("Error handling image message:", error);
-    await msg.reply("❌ An error occurred while analyzing the image.");
+    logger.error("Error handling image message:", {
+      error: error.message,
+      stack: error.stack,
+    });
   }
 };
 
@@ -51,6 +52,7 @@ const handleImageMessage = async (msg) => {
  */
 const analyzeImageWithOpenAI = async (imagePath) => {
   try {
+    logger.info("Starting OpenAI image analysis");
     // Read the image file as a base64 string
     const imageBuffer = fs.readFileSync(imagePath);
 
@@ -74,9 +76,13 @@ const analyzeImageWithOpenAI = async (imagePath) => {
       max_tokens: 500,
     });
 
+    logger.info("Successfully analyzed image with OpenAI");
     return response.choices[0].message.content.trim();
   } catch (error) {
-    console.error("OpenAI Vision API error:", error);
+    logger.error("OpenAI Vision API error:", {
+      error: error.message,
+      stack: error.stack,
+    });
     throw new Error("Failed to analyze image with OpenAI");
   }
 };
