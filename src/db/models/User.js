@@ -31,17 +31,5 @@ module.exports = (sequelize) => {
     }
   );
 
-  User.associate = (models) => {
-    User.hasMany(models.Message, {
-      foreignKey: "sender",
-      as: "sent_messages",
-    });
-    User.belongsToMany(models.Group, {
-      through: "group_users",
-      foreignKey: "userId",
-      otherKey: "groupId",
-    });
-  };
-
   return User;
 };

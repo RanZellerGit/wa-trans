@@ -27,17 +27,6 @@ async function parseMessage(msg) {
     // TODO: support for media messages
 
     case "image":
-      messageContent = "[Image]";
-      try {
-        const media = await msg.downloadMedia();
-        if (media) {
-          messageContent = `[Image with caption: ${
-            msg.caption || "No caption"
-          }]`;
-        }
-      } catch (error) {
-        console.error("Error downloading image:", error);
-      }
       break;
     case "groups_v4_invite":
       messageContent.groupId = msg.inviteV4.groupId.split("@")[0];
@@ -45,7 +34,6 @@ async function parseMessage(msg) {
       messageContent.invitecode = await msg.getInviteCode();
       break;
     case "e2e_notification":
-      return {};
       break;
 
     case "video":

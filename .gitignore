@@ -7,3 +7,4 @@ ecosystem.config.js
 wa-trans.pem
 whatsapp-qr.png
 logs/
+package-lock.json

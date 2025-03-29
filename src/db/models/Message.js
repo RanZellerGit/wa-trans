@@ -42,12 +42,5 @@ module.exports = (sequelize) => {
     }
   );
 
-  Message.associate = (models) => {
-    Message.belongsTo(models.Group, {
-      foreignKey: "group_id",
-      as: "group",
-    });
-  };
-
   return Message;
 };

@@ -57,7 +57,7 @@ async function initializeDatabase() {
     console.log("Successfully connected to the database.");
 
     // Sync all models
-    await sequelize.sync();
+    await sequelize.sync({ alter: true });
     console.log("Database tables verified/created successfully.");
 
     return sequelize;

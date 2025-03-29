@@ -4,32 +4,26 @@ module.exports = (sequelize) => {
   const GroupUser = sequelize.define(
     "GroupUser",
     {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
       groupId: {
         type: DataTypes.STRING,
         allowNull: false,
-        primaryKey: true,
-        references: {
-          model: "groups",
-          key: "id",
-        },
       },
       userId: {
         type: DataTypes.STRING,
         allowNull: false,
-        primaryKey: true,
-        references: {
-          model: "users",
-          key: "id",
-        },
       },
       inviter: {
         type: DataTypes.BOOLEAN,
-        allowNull: false,
         defaultValue: false,
       },
     },
     {
-      tableName: "group_users",
+      tableName: "users_to_groups",
       timestamps: true,
       createdAt: "created_at",
       updatedAt: "updated_at",

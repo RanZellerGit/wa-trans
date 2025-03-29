@@ -6,6 +6,7 @@ const QRCode = require("qrcode");
 const { initializeDatabase } = require("./db/database");
 const { insertGroupUser } = require("./db/actions/groupUserActions");
 const { getOrCreateNewUser } = require("./db/actions/userActions");
+const { getGroupWithInviter } = require("./jobs/messageCheckJob");
 const { handleWhatsAppGroupInvite } = require("./actions/groupsInvitehandle");
 const { insertMessageHandler } = require("./actions/chatMessageHadle");
 const { handleAudioPttMessage } = require("./actions/audioPttHandler");
@@ -76,6 +77,7 @@ client.on("ready", async () => {
   logger.info("WhatsApp client is ready");
   try {
     await initializeDatabase();
+    await getGroupWithInviter();
     logger.info("Database connection established");
   } catch (error) {
     logger.error("Database initialization failed", { error: error.message });
@@ -94,11 +96,17 @@ const isNewMessage = (msg) => {
 
 client.on("group_join", async (notification) => {
   console.log(`Invited by: ${notification.author}`);
+  // get group name
+  const chat = await notification.getChat();
+  const groupName = chat.name;
+
   await insertGroup({
     id: notification.chatId,
-    name: null,
+    name: chat.name,
+    author: notification.author,
   });
-  await insertGroupUser(notification.author, notification.chatId, true);
+
+  await insertGroupUser(notification.recipientIds[0], notification.chatId);
 });
 client.on("message", async (msg) => {
   // Get sender info
