@@ -14,7 +14,7 @@ const handleVideoMessage = async (msg) => {
   const messageContent = await parseMessage(msg);
   logger.info("Processing video message...");
   logger.info("handleVideoMessage: messageContent", messageContent);
-  let ret = { isGroup: false, text: "", type: "video" };
+  let ret = { isGroup: false, text: "", type: "video", groupName: "" };
 
   try {
     if (messageContent.isGroup) {
@@ -22,6 +22,7 @@ const handleVideoMessage = async (msg) => {
       if (!groupHasInviter) {
         return ret;
       }
+      ret.groupName = messageContent.groupName;
       ret.isGroup = true;
     }
     // Download the video

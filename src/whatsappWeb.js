@@ -151,21 +151,27 @@ client.on("message", async (msg) => {
       const inviter = await getUserInviter(msg.from);
       switch (ret.type) {
         case "image":
-          client.sendMessage(inviter, `ֿ*הודעה עם תוכן פוגעני:*\n🖼️`);
+          client.sendMessage(
+            inviter,
+            `ֿ*הודעה עם תוכן פוגעני מקבוצת ${ret.groupName} 🚫:*\n🖼️`
+          );
           break;
         case "video":
-          client.sendMessage(inviter, `ֿ*הודעה עם תוכן פוגעני:*\n🎥`);
+          client.sendMessage(
+            inviter,
+            `ֿ*הודעה עם תוכן פוגעני מקבוצת ${ret.groupName} 🚫:*\n🎥`
+          );
           break;
         case "audio":
           client.sendMessage(
             inviter,
-            `ֿ*הודעה עם תוכן פוגעני:*\n🎤"_${ret.text}_"`
+            `ֿ*הודעה עם תוכן פוגעני מקבוצת ${ret.groupName} 🚫:*\n🎤"_${ret.text}_"`
           );
           break;
         default:
           client.sendMessage(
             inviter,
-            `ֿ*הודעה עם תוכן פוגעני🚫:*\n_"${ret.text}"_`
+            `ֿ*הודעה עם תוכן פוגעני מקבוצת ${ret.groupName} 🚫:*\n_"${ret.text}"_`
           );
       }
       await msg.react("🚫"); // Add ping pong reaction
