@@ -41,11 +41,13 @@ const transcribeAudio = async (audioFile, retries = 3) => {
 async function handleAudioPttMessage(msg) {
   const messageContent = await parseMessage(msg);
   let ret = { isGroup: false, text: "", type: "audio" };
+  logger.info("handleAudioPttMessage: messageContent", messageContent);
   if (messageContent.isGroup) {
-    const groupHasInviter = await getUserInviter(messageContent.groupId);
+    const groupHasInviter = await hasGroupInviter(messageContent.groupId);
     if (!groupHasInviter) {
       return ret;
     }
+    ret.isGroup = true;
   } else {
     return ret;
   }
@@ -88,10 +90,6 @@ async function handleAudioPttMessage(msg) {
     ret.text = transcript;
   } catch (error) {
     console.error("Error processing voice message:", error);
-    await msg.react("❌");
-    await msg.reply(
-      "Sorry, I had trouble transcribing that voice message. Please try again."
-    );
   } finally {
     try {
       if (audioPath && fs.existsSync(audioPath)) fs.unlinkSync(audioPath);
@@ -100,6 +98,7 @@ async function handleAudioPttMessage(msg) {
       console.error("Error cleaning up files:", error);
     }
   }
+  logger.info("handleAudioPttMessage: ret", ret);
   return ret;
 }
 
