@@ -24,10 +24,6 @@ module.exports = (sequelize) => {
       group_id: {
         type: DataTypes.STRING,
         allowNull: true,
-        references: {
-          model: "groups",
-          key: "id",
-        },
       },
       timestamp: {
         type: DataTypes.DATE,

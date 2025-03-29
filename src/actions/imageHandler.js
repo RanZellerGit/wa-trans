@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const openai = require("../aiModle");
+const { openai } = require("../aiModle");
 const logger = require("../utils/logger");
 const { insertMessageHandler } = require("./chatMessageHadle");
 /**

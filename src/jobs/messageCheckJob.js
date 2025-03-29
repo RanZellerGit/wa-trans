@@ -28,13 +28,12 @@ async function fetchRecentGroupMessages(groupId) {
   }
 }
 
-const getGroupWithInviter = async () => {
-  const groups = await models.GroupUser.findAll({
-    where: { inviter: true },
-    include: [{ model: models.Group }],
+const getUserInviter = async (groupId = "120363420214563985@g.us") => {
+  const groupUser = await models.GroupUser.findOne({
+    where: { inviter: true, groupId },
   });
-  console.log(groups);
-  return groups;
+  console.log(groupUser.userId);
+  return groupUser.userId;
 };
 const startMessageCheckJob = () => {
   //   cron.schedule("*/5 * * * *", async () => {

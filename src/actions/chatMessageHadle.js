@@ -7,8 +7,10 @@ const { insertGroup } = require("../db/actions/groupsActions");
 
 const insertMessageHandler = async (msg, content) => {
   const messageContent = await parseMessage(msg);
+  let ret = { isGroup: false, text: "", type: "chat" };
 
   if (messageContent.isGroup) {
+    ret.isGroup = true;
     await insertGroup({
       id: messageContent.groupId,
       name: messageContent.groupName,
@@ -21,6 +23,7 @@ const insertMessageHandler = async (msg, content) => {
     );
     await insertGroupUser(messageContent.user.id, messageContent.groupId);
   }
+  ret.text = content;
   messageContent.content = content;
   await insertMessage(messageContent);
   try {
@@ -37,6 +40,7 @@ const insertMessageHandler = async (msg, content) => {
     logger.error("Error inserting message:", error);
     throw error;
   }
+  return ret;
 };
 
 module.exports = {

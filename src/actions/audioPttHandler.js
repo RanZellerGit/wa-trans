@@ -2,7 +2,7 @@ const fs = require("fs");
 const ffmpeg = require("fluent-ffmpeg");
 const { insertMessage } = require("../db/actions/messagesActions");
 const { parseMessage } = require("../utils/messageParser");
-const openai = require("../aiModle");
+const { openai } = require("../aiModle");
 const mime = require("mime-types");
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 

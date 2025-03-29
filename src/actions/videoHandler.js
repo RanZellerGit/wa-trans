@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const ffmpeg = require("ffmpeg-static");
 const { spawn } = require("child_process");
-const openai = require("../aiModle");
+const { openai } = require("../aiModle");
 const { insertMessageHandler } = require("./chatMessageHadle");
 
 /**

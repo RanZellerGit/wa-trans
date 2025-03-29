@@ -6,7 +6,7 @@ const QRCode = require("qrcode");
 const { initializeDatabase } = require("./db/database");
 const { insertGroupUser } = require("./db/actions/groupUserActions");
 const { getOrCreateNewUser } = require("./db/actions/userActions");
-const { getGroupWithInviter } = require("./jobs/messageCheckJob");
+const { getUserInviter } = require("./db/actions/groupUserActions");
 const { handleWhatsAppGroupInvite } = require("./actions/groupsInvitehandle");
 const { insertMessageHandler } = require("./actions/chatMessageHadle");
 const { handleAudioPttMessage } = require("./actions/audioPttHandler");
@@ -16,6 +16,7 @@ const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
 const { insertGroup } = require("./db/actions/groupsActions");
 const { handleVideoMessage } = require("./actions/videoHandler");
 const logger = require("./utils/logger");
+const { checkOffense } = require("./aiModle");
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 // For debugging
@@ -77,7 +78,6 @@ client.on("ready", async () => {
   logger.info("WhatsApp client is ready");
   try {
     await initializeDatabase();
-    await getGroupWithInviter();
     logger.info("Database connection established");
   } catch (error) {
     logger.error("Database initialization failed", { error: error.message });
@@ -112,9 +112,10 @@ client.on("message", async (msg) => {
   // Get sender info
   if (!isNewMessage(msg) || msg.type === "e2e_notification") return;
 
+  let ret = null;
   if (msg.type === "chat") {
     logger.info("message type is chat");
-    await insertMessageHandler(msg, msg.body);
+    ret = await insertMessageHandler(msg, msg.body);
   }
   if (msg.type === "groups_v4_invite") {
     logger.info("message type is groups_v4_invite");
@@ -142,6 +143,17 @@ client.on("message", async (msg) => {
   if (msg.body === "ping") {
     logger.info("message body is ping");
     await msg.react("🏓"); // Add ping pong reaction
+  }
+  if (ret && ret.isGroup) {
+    const isOffended = await checkOffense(ret.text);
+    if (isOffended === "Yes") {
+      const inviter = await getUserInviter(msg.from);
+      client.sendMessage(
+        inviter,
+        `ֿ*הודעה עם תוכן פוגעני🚫:*\n_"${ret.text}"_`
+      );
+      await msg.react("🚫"); // Add ping pong reaction
+    }
   }
 });
 
