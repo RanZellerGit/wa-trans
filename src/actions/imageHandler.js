@@ -3,13 +3,24 @@ const path = require("path");
 const { openai } = require("../aiModle");
 const logger = require("../utils/logger");
 const { insertMessageHandler } = require("./chatMessageHadle");
+const { parseMessage } = require("../utils/messageParser");
+const { hasGroupInviter } = require("../db/actions/groupUserActions");
 /**
  * Handles image messages from WhatsApp and uses OpenAI Vision API to analyze them
  */
 const handleImageMessage = async (msg) => {
   try {
+    const messageContent = await parseMessage(msg);
     logger.info("Processing image message...");
-
+    logger.info("handleImageMessage: messageContent", messageContent);
+    let ret = { isGroup: false, text: "", type: "image" };
+    if (messageContent.isGroup) {
+      const groupHasInviter = await hasGroupInviter(messageContent.groupId);
+      if (!groupHasInviter) {
+        return ret;
+      }
+      ret.isGroup = true;
+    }
     // Download the image
     const media = await msg.downloadMedia();
     if (!media) {
@@ -32,7 +43,7 @@ const handleImageMessage = async (msg) => {
 
     // Send to OpenAI Vision API
     const response = await analyzeImageWithOpenAI(imagePath);
-
+    ret.text = response;
     // Reply with analysis
     await insertMessageHandler(msg, `*Image Analysis*\n\n${response}`);
 
@@ -45,6 +56,8 @@ const handleImageMessage = async (msg) => {
       stack: error.stack,
     });
   }
+  logger.info("handleImageMessage: ret", ret);
+  return ret;
 };
 
 /**

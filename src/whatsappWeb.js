@@ -131,7 +131,7 @@ client.on("message", async (msg) => {
   // Handle image messages
   if (msg.type === "image") {
     logger.info("message type is image");
-    await handleImageMessage(msg);
+    ret = await handleImageMessage(msg);
   }
 
   if (msg.type === "video") {
@@ -146,6 +146,7 @@ client.on("message", async (msg) => {
   }
   if (ret && ret.isGroup) {
     const isOffended = await checkOffense(ret.text);
+    logger.info("checkOffense: isOffended", isOffended);
     if (isOffended === "Yes") {
       const inviter = await getUserInviter(msg.from);
       client.sendMessage(
