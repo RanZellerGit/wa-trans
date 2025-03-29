@@ -28,7 +28,15 @@ const getUserInviter = async (groupId = "120363420214563985@g.us") => {
   return groupUser.userId;
 };
 
+const hasGroupInviter = async (groupId) => {
+  const groupUser = await models.GroupUser.findOne({
+    where: { inviter: true, groupId },
+  });
+  return groupUser ? true : false;
+};
+
 module.exports = {
   insertGroupUser,
   getUserInviter,
+  hasGroupInviter,
 };
