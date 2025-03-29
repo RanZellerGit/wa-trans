@@ -9,11 +9,11 @@ const { hasGroupInviter } = require("../db/actions/groupUserActions");
  * Handles image messages from WhatsApp and uses OpenAI Vision API to analyze them
  */
 const handleImageMessage = async (msg) => {
+  const messageContent = await parseMessage(msg);
+  logger.info("Processing image message...");
+  logger.info("handleImageMessage: messageContent", messageContent);
+  let ret = { isGroup: false, text: "", type: "image" };
   try {
-    const messageContent = await parseMessage(msg);
-    logger.info("Processing image message...");
-    logger.info("handleImageMessage: messageContent", messageContent);
-    let ret = { isGroup: false, text: "", type: "image" };
     if (messageContent.isGroup) {
       const groupHasInviter = await hasGroupInviter(messageContent.groupId);
       if (!groupHasInviter) {
