@@ -4,14 +4,26 @@ const ffmpeg = require("ffmpeg-static");
 const { spawn } = require("child_process");
 const { openai } = require("../aiModle");
 const { insertMessageHandler } = require("./chatMessageHadle");
-
+const { parseMessage } = require("../utils/messageParser");
+const logger = require("../utils/logger");
+const { hasGroupInviter } = require("../db/actions/groupUserActions");
 /**
  * Handles video messages from WhatsApp, transcribes audio, and analyzes video content
  */
 const handleVideoMessage = async (msg) => {
-  try {
-    console.log("Processing video message...");
+  const messageContent = await parseMessage(msg);
+  logger.info("Processing video message...");
+  logger.info("handleVideoMessage: messageContent", messageContent);
+  let ret = { isGroup: false, text: "", type: "video" };
 
+  try {
+    if (messageContent.isGroup) {
+      const groupHasInviter = await hasGroupInviter(messageContent.groupId);
+      if (!groupHasInviter) {
+        return ret;
+      }
+      ret.isGroup = true;
+    }
     // Download the video
     // Check if message has been sent before
     if (msg.hasQuotedMsg) {
@@ -74,7 +86,7 @@ const handleVideoMessage = async (msg) => {
       msg,
       ` *Video Analysis*\n\n${summary}\n\n *Audio Transcription*:\n\n${transcription}`
     );
-
+    ret.text = ` *Video Analysis*\n\n${summary}\n\n *Audio Transcription*:\n\n${transcription}`;
     // Clean up temporary files
     fs.unlinkSync(videoPath);
     if (audioPath && fs.existsSync(audioPath)) {
@@ -84,6 +96,8 @@ const handleVideoMessage = async (msg) => {
   } catch (error) {
     console.error("Error handling video message:", error);
   }
+  logger.info("handleVideoMessage: ret", ret);
+  return ret;
 };
 
 /**

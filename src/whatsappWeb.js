@@ -136,7 +136,7 @@ client.on("message", async (msg) => {
 
   if (msg.type === "video") {
     logger.info("message type is video");
-    await handleVideoMessage(msg);
+    ret = await handleVideoMessage(msg);
   }
 
   // Keep the existing ping command
@@ -146,13 +146,28 @@ client.on("message", async (msg) => {
   }
   if (ret && ret.isGroup) {
     const isOffended = await checkOffense(ret.text);
-    logger.info("checkOffense: isOffended", isOffended);
+    logger.info(`checkOffense: isOffended: ${isOffended}`);
     if (isOffended === "Yes") {
       const inviter = await getUserInviter(msg.from);
-      client.sendMessage(
-        inviter,
-        `ֿ*הודעה עם תוכן פוגעני🚫:*\n_"${ret.text}"_`
-      );
+      switch (ret.type) {
+        case "image":
+          client.sendMessage(inviter, `ֿ*הודעה עם תוכן פוגעני:*\n🖼️`);
+          break;
+        case "video":
+          client.sendMessage(inviter, `ֿ*הודעה עם תוכן פוגעני:*\n🎥`);
+          break;
+        case "audio":
+          client.sendMessage(
+            inviter,
+            `ֿ*הודעה עם תוכן פוגעני:*\n🎤"_${ret.text}_"`
+          );
+          break;
+        default:
+          client.sendMessage(
+            inviter,
+            `ֿ*הודעה עם תוכן פוגעני🚫:*\n_"${ret.text}"_`
+          );
+      }
       await msg.react("🚫"); // Add ping pong reaction
     }
   }
