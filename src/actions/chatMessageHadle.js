@@ -8,6 +8,7 @@ const { insertGroup } = require("../db/actions/groupsActions");
 const insertMessageHandler = async (msg, content) => {
   const messageContent = await parseMessage(msg);
   let ret = { isGroup: false, text: "", type: "chat" };
+  const groupHasInviter = await getGroupHasInviter(messageContent.groupId);
 
   if (messageContent.isGroup) {
     ret.isGroup = true;

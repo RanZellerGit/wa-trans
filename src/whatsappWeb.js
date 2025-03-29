@@ -125,7 +125,7 @@ client.on("message", async (msg) => {
   // Handle voice messages
   if (msg.type === "audio" || msg.type === "ptt") {
     logger.info("message type is audio or ptt");
-    await handleAudioPttMessage(msg);
+    ret = await handleAudioPttMessage(msg);
   }
 
   // Handle image messages

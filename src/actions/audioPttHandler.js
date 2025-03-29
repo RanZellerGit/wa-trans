@@ -3,6 +3,7 @@ const ffmpeg = require("fluent-ffmpeg");
 const { insertMessage } = require("../db/actions/messagesActions");
 const { parseMessage } = require("../utils/messageParser");
 const { openai } = require("../aiModle");
+const { getUserInviter } = require("../db/actions/groupUserActions");
 const mime = require("mime-types");
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -37,14 +38,23 @@ const transcribeAudio = async (audioFile, retries = 3) => {
   }
 };
 
-async function handleAudioPttMessage(msg, isGroup) {
+async function handleAudioPttMessage(msg) {
   const messageContent = await parseMessage(msg);
+  let ret = { isGroup: false, text: "", type: "audio" };
+  if (messageContent.isGroup) {
+    const groupHasInviter = await getUserInviter(messageContent.groupId);
+    if (!groupHasInviter) {
+      return ret;
+    }
+  } else {
+    return ret;
+  }
   let audioPath = null;
   let mp3Path = null;
 
   try {
-    if (!messageContent.isGroup) {
-      await msg.react("🎵");
+    if (messageContent.isGroup) {
+      ret.isGroup = true;
     }
 
     const media = await msg.downloadMedia();
@@ -73,12 +83,9 @@ async function handleAudioPttMessage(msg, isGroup) {
     const audioFile = fs.createReadStream(mp3Path);
     const transcript = await transcribeAudio(audioFile);
 
-    if (!messageContent.isGroup) {
-      await msg.reply(`🎙️ Transcription:\n\n${transcript}`);
-      await msg.react("✅");
-    }
     messageContent.content = transcript;
     await insertMessage(messageContent);
+    ret.text = transcript;
   } catch (error) {
     console.error("Error processing voice message:", error);
     await msg.react("❌");
@@ -93,6 +100,7 @@ async function handleAudioPttMessage(msg, isGroup) {
       console.error("Error cleaning up files:", error);
     }
   }
+  return ret;
 }
 
 module.exports = { handleAudioPttMessage };
