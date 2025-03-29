@@ -4,6 +4,7 @@ const { insertMessage } = require("../db/actions/messagesActions");
 const { getOrCreateNewUser } = require("../db/actions/userActions");
 const { insertGroupUser } = require("../db/actions/groupUserActions");
 const { insertGroup } = require("../db/actions/groupsActions");
+const { hasGroupInviter } = require("../db/actions/groupUserActions");
 
 const insertMessageHandler = async (msg, content) => {
   const messageContent = await parseMessage(msg);

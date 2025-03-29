@@ -86,7 +86,7 @@ const handleVideoMessage = async (msg) => {
       msg,
       ` *Video Analysis*\n\n${summary}\n\n *Audio Transcription*:\n\n${transcription}`
     );
-    ret.text = ` *Video Analysis*\n\n${summary}\n\n *Audio Transcription*:\n\n${transcription}`;
+    ret.text = `*Video Analysis*\n\n${summary}\n\n *Audio Transcription*:\n\n${transcription}`;
     // Clean up temporary files
     fs.unlinkSync(videoPath);
     if (audioPath && fs.existsSync(audioPath)) {
