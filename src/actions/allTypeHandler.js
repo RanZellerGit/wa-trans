@@ -5,7 +5,7 @@ const { handleVideoMessage } = require("./videoHandler");
 const { checkOffense } = require("./../aiModle");
 const logger = require("./../utils/logger");
 const client = require("./../whatsappWeb");
-const { handleWhatsAppGroupInvite } = require("./groupsInvitehandler");
+const { handleWhatsAppGroupInvite } = require("./groupsInviteHandler");
 const { getUserInviter } = require("./../db/actions/groupUserActions");
 const { getMessage } = require("./../db/actions/messagesActions");
 
