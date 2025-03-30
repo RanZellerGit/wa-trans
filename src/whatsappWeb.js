@@ -9,7 +9,7 @@ const { insertGroupUser } = require("./db/actions/groupUserActions");
 const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
 const { insertGroup } = require("./db/actions/groupsActions");
 const logger = require("./utils/logger");
-const { allTypeHandler } = require("./actions/alltypeHandler");
+const { allTypeHandler } = require("./actions/allTypeHandler");
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 // For debugging
