@@ -1,6 +1,7 @@
 const { Sequelize } = require("sequelize");
 const fs = require("fs");
 const path = require("path");
+const { flush } = require("pm2");
 require("dotenv").config();
 
 // Database configuration
@@ -48,16 +49,13 @@ Object.keys(models).forEach((modelName) => {
 
 async function initializeDatabase() {
   console.log("Initializing database...");
-  console.log(process.env.DB_USER);
-  console.log(process.env.DB_PASSWORD);
-  console.log(process.env.DB_NAME);
   try {
     // Test the connection
     await sequelize.authenticate();
     console.log("Successfully connected to the database.");
 
     // Sync all models
-    await sequelize.sync({ alter: true });
+    await sequelize.sync({ alter: false });
     console.log("Database tables verified/created successfully.");
 
     return sequelize;

@@ -2,7 +2,7 @@ const { models } = require("../database");
 
 async function insertMessage(messageData) {
   try {
-    await models.Message.create({
+    await models.Message.upsert({
       id: messageData.messageId,
       content: messageData.content,
       message_type: messageData.type,
@@ -15,6 +15,11 @@ async function insertMessage(messageData) {
   }
 }
 
+async function getMessage(messageId) {
+  return await models.Message.findOne({ where: { id: messageId } });
+}
+
 module.exports = {
   insertMessage,
+  getMessage,
 };

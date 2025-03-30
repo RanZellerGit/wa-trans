@@ -12,13 +12,14 @@ const handleImageMessage = async (msg) => {
   const messageContent = await parseMessage(msg);
   logger.info("Processing image message...");
   logger.info("handleImageMessage: messageContent", messageContent);
-  let ret = { isGroup: false, text: "", type: "image" };
+  let ret = { isGroup: false, text: "", type: "image", groupName: "" };
   try {
     if (messageContent.isGroup) {
       const groupHasInviter = await hasGroupInviter(messageContent.groupId);
       if (!groupHasInviter) {
         return ret;
       }
+      ret.groupName = messageContent.groupName;
       ret.isGroup = true;
     }
     // Download the image

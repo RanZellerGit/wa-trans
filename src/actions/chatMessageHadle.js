@@ -3,12 +3,12 @@ const { parseMessage } = require("../utils/messageParser");
 const { insertMessage } = require("../db/actions/messagesActions");
 const { getOrCreateNewUser } = require("../db/actions/userActions");
 const { insertGroupUser } = require("../db/actions/groupUserActions");
-const { insertGroup } = require("../db/actions/groupsActions");
+const { insertGroup, getGroup } = require("../db/actions/groupsActions");
 const { hasGroupInviter } = require("../db/actions/groupUserActions");
 
 const insertMessageHandler = async (msg, content) => {
   const messageContent = await parseMessage(msg);
-  let ret = { isGroup: false, text: "", type: "chat" };
+  let ret = { isGroup: false, text: "", type: "chat", groupName: "" };
 
   if (messageContent.isGroup) {
     const groupHasInviter = await hasGroupInviter(messageContent.groupId);
@@ -16,6 +16,7 @@ const insertMessageHandler = async (msg, content) => {
       return ret;
     }
     ret.isGroup = true;
+    ret.groupName = messageContent.groupName;
     await insertGroup({
       id: messageContent.groupId,
       name: messageContent.groupName,

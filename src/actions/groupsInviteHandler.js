@@ -1,5 +1,5 @@
-const { Client } = require("whatsapp-web.js");
 const logger = require("../utils/logger");
+const client = require("../whatsappWeb");
 
 // Handle WhatsApp group invites
 const handleWhatsAppGroupInvite = async (client, inviteCode) => {

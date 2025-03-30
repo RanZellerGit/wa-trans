@@ -41,13 +41,14 @@ const transcribeAudio = async (audioFile, retries = 3) => {
 
 async function handleAudioPttMessage(msg) {
   const messageContent = await parseMessage(msg);
-  let ret = { isGroup: false, text: "", type: "audio" };
+  let ret = { isGroup: false, text: "", type: "audio", groupName: "" };
   logger.info("handleAudioPttMessage: messageContent", messageContent);
   if (messageContent.isGroup) {
     const groupHasInviter = await hasGroupInviter(messageContent.groupId);
     if (!groupHasInviter) {
       return ret;
     }
+    ret.groupName = messageContent.groupName;
     ret.isGroup = true;
   } else {
     return ret;

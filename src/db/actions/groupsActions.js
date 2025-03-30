@@ -17,4 +17,11 @@ async function insertGroup(groupData) {
   }
 }
 
-module.exports = { insertGroup };
+async function getGroup(groupId) {
+  const group = await models.Group.findOne({
+    where: { id: groupId },
+  });
+  return group;
+}
+
+module.exports = { insertGroup, getGroup };

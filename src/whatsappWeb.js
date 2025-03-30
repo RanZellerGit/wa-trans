@@ -5,18 +5,11 @@ const fs = require("fs");
 const QRCode = require("qrcode");
 const { initializeDatabase } = require("./db/database");
 const { insertGroupUser } = require("./db/actions/groupUserActions");
-const { getOrCreateNewUser } = require("./db/actions/userActions");
-const { getUserInviter } = require("./db/actions/groupUserActions");
-const { handleWhatsAppGroupInvite } = require("./actions/groupsInvitehandle");
-const { insertMessageHandler } = require("./actions/chatMessageHadle");
-const { handleAudioPttMessage } = require("./actions/audioPttHandler");
-const { handleImageMessage } = require("./actions/imageHandler");
 // Add FFmpeg path configuration - Fix the configuration
 const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
 const { insertGroup } = require("./db/actions/groupsActions");
-const { handleVideoMessage } = require("./actions/videoHandler");
 const logger = require("./utils/logger");
-const { checkOffense } = require("./aiModle");
+const { allTypeHandler } = require("./actions/alltypeHandler");
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 // For debugging
@@ -84,16 +77,6 @@ client.on("ready", async () => {
   }
 });
 
-// Helper function to check if message is new
-const isNewMessage = (msg) => {
-  // Messages older than 1 minute are considered old
-  const ONE_MINUTE = 5 * 1000; // 60 seconds * 1000 milliseconds
-  const messageTime = msg.timestamp * 1000; // Convert to milliseconds
-  const currentTime = Date.now();
-
-  return currentTime - messageTime < ONE_MINUTE;
-};
-
 client.on("group_join", async (notification) => {
   console.log(`Invited by: ${notification.author}`);
   // get group name
@@ -108,75 +91,14 @@ client.on("group_join", async (notification) => {
 
   await insertGroupUser(notification.recipientIds[0], notification.chatId);
 });
+//on message edit
+client.on("message_edit", async (msg) => {
+  logger.info("message is edited");
+  await msg.react("");
+  await allTypeHandler(msg, client, true);
+});
 client.on("message", async (msg) => {
-  // Get sender info
-  if (!isNewMessage(msg) || msg.type === "e2e_notification") return;
-
-  let ret = null;
-  if (msg.type === "chat") {
-    logger.info("message type is chat");
-    ret = await insertMessageHandler(msg, msg.body);
-  }
-  if (msg.type === "groups_v4_invite") {
-    logger.info("message type is groups_v4_invite");
-    await handleWhatsAppGroupInvite(client, messageContent.invitecode);
-  }
-
-  // Handle voice messages
-  if (msg.type === "audio" || msg.type === "ptt") {
-    logger.info("message type is audio or ptt");
-    ret = await handleAudioPttMessage(msg);
-  }
-
-  // Handle image messages
-  if (msg.type === "image") {
-    logger.info("message type is image");
-    ret = await handleImageMessage(msg);
-  }
-
-  if (msg.type === "video") {
-    logger.info("message type is video");
-    ret = await handleVideoMessage(msg);
-  }
-
-  // Keep the existing ping command
-  if (msg.body === "ping") {
-    logger.info("message body is ping");
-    await msg.react("🏓"); // Add ping pong reaction
-  }
-  if (ret && ret.isGroup) {
-    const isOffended = await checkOffense(ret.text);
-    logger.info(`checkOffense: isOffended: ${isOffended}`);
-    if (isOffended === "Yes") {
-      const inviter = await getUserInviter(msg.from);
-      switch (ret.type) {
-        case "image":
-          client.sendMessage(
-            inviter,
-            `ֿ*הודעה עם תוכן פוגעני מקבוצת ${ret.groupName} 🚫:*\n🖼️`
-          );
-          break;
-        case "video":
-          client.sendMessage(
-            inviter,
-            `ֿ*הודעה עם תוכן פוגעני מקבוצת ${ret.groupName} 🚫:*\n🎥`
-          );
-          break;
-        case "audio":
-          client.sendMessage(
-            inviter,
-            `ֿ*הודעה עם תוכן פוגעני מקבוצת ${ret.groupName} 🚫:*\n🎤"_${ret.text}_"`
-          );
-          break;
-        default:
-          client.sendMessage(
-            inviter,
-            `ֿ*הודעה עם תוכן פוגעני מקבוצת ${ret.groupName} 🚫:*\n_"${ret.text}"_`
-          );
-      }
-      await msg.react("🚫"); // Add ping pong reaction
-    }
-  }
+  await allTypeHandler(msg, client);
 });
 
 // Add event handler for sent messages
