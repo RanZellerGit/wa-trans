@@ -5,12 +5,15 @@ const { flush } = require("pm2");
 require("dotenv").config();
 
 // Database configuration
-
+console.log(process.env.DB_ROOT_USER);
+console.log(process.env.ROOT_PASSWORD);
+console.log(process.env.DB_NAME);
+console.log(process.env.DB_PORT);
 const sequelize = new Sequelize({
   dialect: "mysql",
-  host: "database-1.chsyo8u64noi.eu-central-1.rds.amazonaws.com", // or your RDS endpoint if using RDS
-  username: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD,
+  host: process.env.DB_HOST || "127.0.0.1", // Use the environment variable with fallback
+  username: process.env.DB_ROOT_USER,
+  password: process.env.ROOT_PASSWORD,
   database: process.env.DB_NAME || "your_database",
   port: process.env.DB_PORT || 3306,
   logging: console.log,

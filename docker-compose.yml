@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: wa-app
+    restart: always
+    ports:
+      - "3000:3000" # Map host port 3000 to container port 3000 (adjust if your app uses a different port)
+    volumes:
+      - .:/usr/src/app # Map current directory to the container's working directory
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db        # Service name of the database container
+      - DB_USER=${DB_USER:-whatsapp_user} # Use environment variable or default
+      - DB_PASSWORD=${DB_PASSWORD:-your_strong_password} # Use environment variable or default
+      - DB_NAME=${DB_NAME:-whatsapp_db} # Use environment variable or default
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    container_name: whatsapp_mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql # Persist database data
+    ports:
+      - "3306:3306"
+      
+
+volumes:
+  mysql_data:
+  whatsapp_session: 

@@ -25,6 +25,7 @@ const client = new Client({
     dataPath: ".wwebjs_auth", // Path where session data will be stored
   }),
   puppeteer: {
+    executablePath: "/usr/lib64/chromium-browser/headless_shell",
     headless: true,
     args: [
       "--no-sandbox",
@@ -106,6 +107,12 @@ client.on("message_create", async (msg) => {
   if (msg.fromMe) {
     logger.info("message is sent by me");
   }
+});
+client.on("loading_screen", (percent, message) => {
+  logger.info("WhatsApp loading progress", {
+    percent: percent,
+    message: message,
+  });
 });
 
 // Add error handling and reconnection logic

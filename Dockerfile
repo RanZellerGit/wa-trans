@@ -1,0 +1,23 @@
+FROM almalinux:9
+
+RUN dnf update -y && dnf install -y epel-release
+
+RUN dnf install -y chromium-common chromium-headless
+
+
+RUN mkdir /app
+
+WORKDIR /app
+
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+RUN bash -c -l ". ~/.nvm/nvm.sh && nvm install 20"
+
+COPY package.json .
+
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+RUN bash -c -l 'npm install'
+
+RUN bash -c -l 'npm install -g pm2'
+
+COPY . .
+CMD ["/bin/bash", "-c", "-l", "pm2-runtime start ecosystem.config.js"]

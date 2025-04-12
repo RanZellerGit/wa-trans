@@ -1,18 +1,20 @@
-#!/bin/bash
+#! /bin/bash
+# git pull
 
-# Pull latest changes
-git pull
+# # Install dependencies
+# npm install
 
-# Install dependencies
-npm install
-
-# Stop any existing instances
+# # Stop any existing instances
 pm2 stop whatsapp-bot
 pm2 delete whatsapp-bot
 
-# Clear PM2 logs
+# # Clear PM2 logs
 pm2 flush
 
-cd /home/ec2-user/wa-trans
+# cd /home/ec2-user/wa-trans
+# Start nginx service
+
 
 pm2 start ecosystem.config.js 
+nginx -g 'daemon off;' 
+
