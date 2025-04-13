@@ -18,5 +18,8 @@ jobs:
       - name: Build the Docker image
         run: docker build -t wa-watchapp .
 
+      - name: Tag the Docker image
+        run: docker tag wa-watchapp:latest ranzeller/wa-watchapp:latest
+
       - name: Push to Dockerhub
         run: docker push ranzeller/wa-watchapp:latest
