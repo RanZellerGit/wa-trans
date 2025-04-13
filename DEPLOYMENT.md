@@ -20,32 +20,43 @@
    chmod +x scripts/ec2-setup.sh
    ./scripts/ec2-setup.sh
    ```
+   **Important**: Before running, edit the script to use your actual GitHub and DockerHub usernames.
 
-## GitHub Secrets Configuration
+## GitHub and DockerHub Secrets Configuration
 
 Add the following secrets to your GitHub repository:
 
-1. `AWS_ACCESS_KEY_ID`: Your AWS access key
-2. `AWS_SECRET_ACCESS_KEY`: Your AWS secret access key
-3. `AWS_REGION`: Your AWS region (e.g., us-east-1)
-4. `EC2_HOST`: Your EC2 instance public IP or DNS
-5. `EC2_USERNAME`: Usually 'ec2-user' for Amazon Linux
-6. `EC2_SSH_KEY`: The content of your private SSH key
+1. `DOCKER_USERNAME`: Your DockerHub username
+2. `DOCKER_TOKEN`: Your DockerHub access token (create one in DockerHub account settings)
+3. `AWS_ACCESS_KEY_ID`: Your AWS access key
+4. `AWS_SECRET_ACCESS_KEY`: Your AWS secret access key
+5. `AWS_REGION`: Your AWS region (e.g., us-east-1)
+6. `EC2_HOST`: Your EC2 instance public IP or DNS
+7. `EC2_USERNAME`: Usually 'ec2-user' for Amazon Linux
+8. `EC2_SSH_KEY`: The content of your private SSH key
 
 ## How It Works
 
 1. When you push code to the main branch, GitHub Actions is triggered
-2. The workflow connects to your EC2 instance
-3. It pulls the latest code from your repository
-4. Rebuilds the Docker image
-5. Stops and removes the old container
-6. Starts a new container with the updated code
+2. The workflow builds your Docker image and pushes it to DockerHub
+3. Then it connects to your EC2 instance
+4. Pulls the latest code from your repository
+5. Uses docker-compose to pull the latest Docker image from DockerHub
+6. Stops the old container and starts a new one with the updated image
 
 ## Troubleshooting
 
 - Check GitHub Actions logs for deployment errors
 - SSH into the EC2 instance to check Docker container status:
+
   ```
   docker ps -a
-  docker logs whatsapp-container
+  docker-compose logs
+  ```
+
+- To manually restart the container:
+  ```
+  cd /home/ec2-user/whatsapp-web
+  docker-compose down
+  docker-compose up -d
   ```
