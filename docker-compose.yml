@@ -2,8 +2,7 @@ version: '3.8'
 
 services:
   app:
-    build: .
-    container_name: wa-app
+    image: ranzeller/wa-watchapp:latest
     restart: always
     ports:
       - "3000:3000" # Map host port 3000 to container port 3000 (adjust if your app uses a different port)
@@ -12,9 +11,10 @@ services:
     environment:
       - NODE_ENV=development
       - DB_HOST=db        # Service name of the database container
-      - DB_USER=${DB_USER:-whatsapp_user} # Use environment variable or default
-      - DB_PASSWORD=${DB_PASSWORD:-your_strong_password} # Use environment variable or default
-      - DB_NAME=${DB_NAME:-whatsapp_db} # Use environment variable or default
+      - DB_USER=${DB_USER} # Use environment variable or default
+      - DB_PASSWORD=${DB_PASSWORD} # Use environment variable or default
+      - DB_NAME=${DB_NAME} # Use environment variable or default
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     depends_on:
       - db
 
