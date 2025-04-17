@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: "whatsapp-bot",
+      name: "watchapp-dev",
       script: "index.js",
       watch: false,
       instances: 1,

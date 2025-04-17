@@ -2,17 +2,20 @@ version: '3.8'
 
 services:
   app:
-    image: ranzeller/wa-watchapp:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
     restart: always
     ports:
       - "3000:3000" # Map host port 3000 to container port 3000 (adjust if your app uses a different port)
     volumes:
       - .:/usr/src/app # Map current directory to the container's working directory
+      - .wwebjs_auth:/app/.wwebjs_auth # Mount WhatsApp session data for persistence
     environment:
-      - NODE_ENV=production
-      - DB_HOST=${DB_HOST}       # Service name of the database container
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
+      - NODE_ENV=development
+      - DB_HOST=db      # Service name of the database container
+      - DB_USER=root
+      - DB_PASSWORD=${DB_ROOT_PASSWORD}
       - DB_NAME=${DB_NAME}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
     depends_on:
@@ -20,19 +23,18 @@ services:
 
   db:
     image: mysql:8.0
-    container_name: whatsapp_mysql_db
-    restart: always
+    container_name: whatsapp_mysql_db_dev
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${ROOT_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - mysql_data:/var/lib/mysql # Persist database data
+      - mysql_data_dev:/var/lib/mysql
     ports:
       - "3306:3306"
       
-
 volumes:
-  mysql_data:
+  mysql_data_dev:
   whatsapp_session: 

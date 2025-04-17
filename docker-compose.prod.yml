@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  app:
+    image: ranzeller/wa-watchapp:latest
+    restart: always
+    ports:
+      - "3000:3000" 
+    volumes:
+      - .wwebjs_auth:/app/.wwebjs_auth # Mount WhatsApp session data for persistence
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=db       
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    container_name: whatsapp_mysql_db_prod
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mysql_data_prod:/var/lib/mysql
+    ports:
+      - "3306:3306"
+      
+volumes:
+  mysql_data_prod:
+  whatsapp_session: 

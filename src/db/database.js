@@ -5,16 +5,16 @@ const { flush } = require("pm2");
 require("dotenv").config();
 
 // Database configuration
-console.log(process.env.DB_USER);
-console.log(process.env.DB_PASSWORD);
-console.log(process.env.DB_NAME);
-console.log(process.env.DB_HOST);
-console.log(process.env.DB_PORT);
+console.log("DB_USER", process.env.DB_USER);
+console.log("DB_PASSWORD", process.env.DB_PASSWORD);
+console.log("DB_NAME", process.env.DB_NAME);
+console.log("DB_HOST", process.env.DB_HOST);
+console.log("DB_PORT", process.env.DB_PORT);
 const sequelize = new Sequelize({
   dialect: "mysql",
   host: process.env.DB_HOST || "127.0.0.1", // Use the environment variable with fallback
-  username: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+  username: process.env.DB_USER || "admin",
+  password: process.env.DB_PASSWORD || "admin",
   database: process.env.DB_NAME || "your_database",
   port: process.env.DB_PORT || 3306,
   logging: console.log,

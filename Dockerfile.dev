@@ -22,5 +22,5 @@ RUN bash -c -l 'npm install -g pm2'
 COPY . /app/
 
 
-RUN ls
-CMD ["/bin/bash", "-c", "-l", "pm2-runtime start ecosystem.config.js --only whatsapp-web-prod"]
+# For development, we'll use nodemon for hot reloading
+CMD ["/bin/bash", "-c", "-l", "pm2-runtime start ecosystem.config.js --only watchapp-dev"]

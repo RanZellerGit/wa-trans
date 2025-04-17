@@ -19,35 +19,26 @@ if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
 
-// let puppeteer = {
-//   headless: true,
-//   args: [
-//     "--no-sandbox",
-//     "--disable-setuid-sandbox",
-// "--disable-dev-shm-usage",
-// "--disable-accelerated-2d-canvas",
-// "--disable-gpu",
-//   ],
-// };
-// if (process.env.NODE_ENV === "production") {
-//   puppeteer.executablePath = "/usr/lib64/chromium-browser/headless_shell";
-// }
+let puppeteer = {
+  headless: true,
+  args: [
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-dev-shm-usage",
+    "--disable-accelerated-2d-canvas",
+    "--disable-gpu",
+  ],
+};
+if (process.env.NODE_ENV === "production") {
+  puppeteer.executablePath = "/usr/lib64/chromium-browser/headless_shell";
+}
 console.log(process.env.NODE_ENV);
 // Update client initialization to use LocalAuth
 const client = new Client({
   authStrategy: new LocalAuth({
     dataPath: ".wwebjs_auth", // Path where session data will be stored
   }),
-  puppeteer: {
-    headless: true,
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-accelerated-2d-canvas",
-      "--disable-gpu",
-    ],
-  },
+  puppeteer,
 });
 
 client.on("qr", async (qr) => {

@@ -4,9 +4,9 @@
   "description": "A new Node.js project",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js",
+    "start": "docker compose up -d db && nodemon index.js",
     "docker:build": "docker build -t wa-trans:latest .",
-    "docker:run": "docker run -it --rm wa-trans:latest",
+    "docker:run-dev": "docker compose -f docker-compose.dev.yml up --force-recreate --build",
     "prod": "./deploy.sh",
     "prod-start": "node",
     "connectEc2": "ssh -i wa-trans.pem ubuntu@63.177.51.202",
