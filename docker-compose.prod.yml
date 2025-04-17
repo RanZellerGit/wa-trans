@@ -11,10 +11,10 @@ services:
     environment:
       - NODE_ENV=production
       - DB_HOST=db       
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DB_USER=root
+      - DB_PASSWORD=12345678
+      - DB_NAME=myDB
+      - OPENAI_API_KEY=$$(aws ssm get-parameter --name /wa-trans/OPENAI_API_KEY --with-decryption --query Parameter.Value --output text)
     depends_on:
       - db
 
@@ -23,10 +23,10 @@ services:
     container_name: whatsapp_mysql_db_prod
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: 12345678
+      MYSQL_DATABASE: myDB
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
     volumes:
       - mysql_data_prod:/var/lib/mysql
     ports:

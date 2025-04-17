@@ -23,4 +23,4 @@ COPY . /app/
 
 
 RUN ls
-CMD ["/bin/bash", "-c", "-l", "pm2-runtime start ecosystem.config.js --only whatsapp-web-prod"]
+CMD ["/bin/bash", "-c", "-l", "pm2-runtime start ecosystem.config.js --only watchapp-prod"]
