@@ -9,11 +9,11 @@ services:
     volumes:
       - .:/usr/src/app # Map current directory to the container's working directory
     environment:
-      - NODE_ENV=development
-      - DB_HOST=db        # Service name of the database container
-      - DB_USER=${DB_USER} # Use environment variable or default
-      - DB_PASSWORD=${DB_PASSWORD} # Use environment variable or default
-      - DB_NAME=${DB_NAME} # Use environment variable or default
+      - NODE_ENV=production
+      - DB_HOST=${DB_HOST}       # Service name of the database container
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
     depends_on:
       - db

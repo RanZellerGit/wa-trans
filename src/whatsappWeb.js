@@ -19,13 +19,26 @@ if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
 
+// let puppeteer = {
+//   headless: true,
+//   args: [
+//     "--no-sandbox",
+//     "--disable-setuid-sandbox",
+// "--disable-dev-shm-usage",
+// "--disable-accelerated-2d-canvas",
+// "--disable-gpu",
+//   ],
+// };
+// if (process.env.NODE_ENV === "production") {
+//   puppeteer.executablePath = "/usr/lib64/chromium-browser/headless_shell";
+// }
+console.log(process.env.NODE_ENV);
 // Update client initialization to use LocalAuth
 const client = new Client({
   authStrategy: new LocalAuth({
     dataPath: ".wwebjs_auth", // Path where session data will be stored
   }),
   puppeteer: {
-    executablePath: "/usr/lib64/chromium-browser/headless_shell",
     headless: true,
     args: [
       "--no-sandbox",
@@ -108,13 +121,6 @@ client.on("message_create", async (msg) => {
     logger.info("message is sent by me");
   }
 });
-client.on("loading_screen", (percent, message) => {
-  logger.info("WhatsApp loading progress", {
-    percent: percent,
-    message: message,
-  });
-});
-
 // Add error handling and reconnection logic
 client.on("disconnected", async (reason) => {
   logger.warn("Client was disconnected", { reason });

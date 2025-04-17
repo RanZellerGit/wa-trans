@@ -9,7 +9,7 @@
     "docker:run": "docker run -it --rm wa-trans:latest",
     "prod": "./deploy.sh",
     "prod-start": "node",
-    "connectEc2": "ssh -i wa-trans.pem ubuntu@35.159.65.252",
+    "connectEc2": "ssh -i wa-trans.pem ubuntu@63.177.51.202",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

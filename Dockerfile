@@ -19,5 +19,7 @@ RUN bash -c -l 'npm install'
 
 RUN bash -c -l 'npm install -g pm2'
 
-COPY . .
+COPY . /app/
+
+RUN ls
 CMD ["/bin/bash", "-c", "-l", "pm2-runtime start ecosystem.config.js"]
