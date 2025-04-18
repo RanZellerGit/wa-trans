@@ -14,7 +14,7 @@ services:
       - DB_USER=root
       - DB_PASSWORD=12345678
       - DB_NAME=myDB
-      - OPENAI_API_KEY=$$(aws ssm get-parameter --name /wa-bot/openAiApi --with-decryption --query Parameter.Value --output text)
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     depends_on:
       - db
 

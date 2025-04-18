@@ -12,5 +12,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Set OPENAI_API_KEY
+        run: |
+          OPENAI_API_KEY=$(aws ssm get-parameter --name /wa-bot/openAiApi --with-decryption --query Parameter.Value --output text)
+          echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> $GITHUB_ENV
       - name: run docker compose
         run: docker compose -f docker-compose.prod.yml up -d
