@@ -28,7 +28,7 @@ apt-get install -y nodejs
 
 # Install PM2 globally
 npm install -g pm2
-# Add Docker’s official GPG key
+# Add Docker's official GPG key
 install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
     gpg --dearmor -o /etc/apt/keyrings/docker.gpg
@@ -37,9 +37,54 @@ chmod a+r /etc/apt/keyrings/docker.gpg
 apt-get update -y
 apt-get install -y chromium-browser
 
-# Log installation for verification
-echo "Installed Chromium dependencies" >> /var/log/user-data.log
+# Install Chromium/Chrome dependencies for Puppeteer
+apt-get update -y
+apt-get install -y \
+    fonts-liberation \
+    libatk-bridge2.0-0t64 \
+    libatk1.0-0t64 \
+    libc6 \
+    libcairo2 \
+    libcups2t64 \
+    libdbus-1-3 \
+    libexpat1 \
+    libfontconfig1 \
+    libgbm1 \
+    libgcc-s1 \
+    libgdk-pixbuf2.0-0 \
+    libglib2.0-0t64 \
+    libgtk-3-0t64 \
+    libnspr4 \
+    libnss3 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libstdc++6 \
+    libx11-6 \
+    libx11-xcb1 \
+    libxcb1 \
+    libxcomposite1 \
+    libxcursor1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxi6 \
+    libxrandr2 \
+    libxrender1 \
+    libxss1 \
+    libxtst6 \
+    ca-certificates \
+    xdg-utils \
+    wget
 
+# Install Chrome directly using the .deb package
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -P /tmp/
+apt-get install -y /tmp/google-chrome-stable_current_amd64.deb
+rm /tmp/google-chrome-stable_current_amd64.deb
+
+ln -sf /usr/bin/google-chrome /usr/lib/chromium-browser
+
+# Log installation for verification
+echo "Installed Chrome and dependencies for Puppeteer" >> /var/log/user-data.log
 
 # Add Docker repository to APT sources
 echo \
