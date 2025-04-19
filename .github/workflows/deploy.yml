@@ -17,4 +17,8 @@ jobs:
           OPENAI_API_KEY=$(aws ssm get-parameter --name /wa-bot/openAiApi --with-decryption --query Parameter.Value --output text)
           echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> $GITHUB_ENV
       - name: run docker compose
-        run: docker compose -f docker-compose.prod.yml up -d
+        run: docker compose -f docker-compose.prod.yml up -d db
+      - name: npm install
+        run: pwd
+      - name: run pm2
+        run: npm run prod
