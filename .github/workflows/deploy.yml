@@ -19,6 +19,6 @@ jobs:
       - name: run docker compose
         run: docker compose -f docker-compose.prod.yml up -d db
       - name: npm install
-        run: pwd
+        run: npm install
       - name: run pm2
         run: npm run prod
