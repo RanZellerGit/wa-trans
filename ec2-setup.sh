@@ -35,7 +35,7 @@ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
 chmod a+r /etc/apt/keyrings/docker.gpg
 # Install Chromium dependencies
 apt-get update -y
-apt-get install -y chromium-common chromium-headless
+apt-get install -y chromium-browser
 
 # Log installation for verification
 echo "Installed Chromium dependencies" >> /var/log/user-data.log

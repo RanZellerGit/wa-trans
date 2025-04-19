@@ -15,6 +15,7 @@ jobs:
       - name: Set OPENAI_API_KEY
         run: |
           OPENAI_API_KEY=$(aws ssm get-parameter --name /wa-bot/openAiApi --with-decryption --query Parameter.Value --output text)
+          NODE_ENV=production
           DB_HOST=127.0.0.1       
           DB_USER=root
           DB_PASSWORD=12345678

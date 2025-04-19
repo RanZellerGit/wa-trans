@@ -30,7 +30,7 @@ let puppeteer = {
   ],
 };
 if (process.env.NODE_ENV === "production") {
-  puppeteer.executablePath = "/usr/lib64/chromium-browser/headless_shell";
+  puppeteer.executablePath = "/usr/lib/chromium-browser";
 }
 console.log(process.env.NODE_ENV);
 // Update client initialization to use LocalAuth
